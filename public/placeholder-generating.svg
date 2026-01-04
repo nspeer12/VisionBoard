@@ -1,0 +1,7 @@
+<svg width="350" height="280" viewBox="0 0 350 280" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="350" height="280" fill="#F5EDE4"/>
+  <circle cx="175" cy="140" r="30" stroke="#C4A484" stroke-width="3" stroke-dasharray="10 5" fill="none">
+    <animateTransform attributeName="transform" type="rotate" from="0 175 140" to="360 175 140" dur="2s" repeatCount="indefinite"/>
+  </circle>
+  <text x="175" y="200" text-anchor="middle" fill="#5C6B73" font-family="system-ui" font-size="14">Generating...</text>
+</svg>

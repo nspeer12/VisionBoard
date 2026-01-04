@@ -1,0 +1,188 @@
+@import "tailwindcss";
+
+@theme {
+  /* Dreamy, warm color palette */
+  --color-cream: #FDF8F3;
+  --color-cream-dark: #F5EDE4;
+  --color-sand: #E8DED3;
+  --color-terracotta: #C4A484;
+  --color-terracotta-dark: #A68B6A;
+  --color-sage: #9CAF88;
+  --color-sage-dark: #7A8F68;
+  --color-slate: #5C6B73;
+  --color-charcoal: #2D3436;
+  --color-ink: #1A1A1A;
+  
+  /* Accent colors */
+  --color-rose: #D4A5A5;
+  --color-lavender: #B8B5C9;
+  --color-lavender-dark: #9691AB;
+  --color-ocean: #7FA6B5;
+  
+  /* Typography scale */
+  --font-display: "Playfair Display", Georgia, serif;
+  --font-serif: "Lora", Georgia, serif;
+  --font-sans: "Inter", system-ui, sans-serif;
+  
+  /* Animation timings */
+  --ease-gentle: cubic-bezier(0.4, 0, 0.2, 1);
+  --duration-slow: 500ms;
+  --duration-medium: 300ms;
+  --duration-fast: 150ms;
+}
+
+@font-face {
+  font-family: "Playfair Display";
+  src: url("https://fonts.gstatic.com/s/playfairdisplay/v37/nuFvD-vYSZviVYUb_rj3ij__anPXJzDwcbmjWBN2PKdFvXDXbtXK-F2qC0s.woff2") format("woff2");
+  font-weight: 400 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Lora";
+  src: url("https://fonts.gstatic.com/s/lora/v35/0QI6MX1D_JOuGQbT0gvTJPa787weuxJBkq0.woff2") format("woff2");
+  font-weight: 400 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-serif);
+  background-color: var(--color-cream);
+  color: var(--color-charcoal);
+  line-height: 1.7;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Dreamy text selection */
+::selection {
+  background-color: var(--color-terracotta);
+  color: var(--color-cream);
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-cream-dark);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-sand);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-terracotta);
+}
+
+/* Focus styles */
+*:focus-visible {
+  outline: 2px solid var(--color-terracotta);
+  outline-offset: 2px;
+}
+
+/* Utility classes */
+.font-display {
+  font-family: var(--font-display);
+}
+
+.font-serif {
+  font-family: var(--font-serif);
+}
+
+.font-sans {
+  font-family: var(--font-sans);
+}
+
+/* Gradient backgrounds */
+.bg-gradient-warm {
+  background: linear-gradient(135deg, var(--color-cream) 0%, var(--color-cream-dark) 100%);
+}
+
+.bg-gradient-dreamy {
+  background: linear-gradient(180deg, var(--color-cream) 0%, var(--color-lavender) 50%, var(--color-rose) 100%);
+  opacity: 0.3;
+}
+
+/* Text gradient */
+.text-gradient {
+  background: linear-gradient(135deg, var(--color-terracotta) 0%, var(--color-sage-dark) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Smooth transitions */
+.transition-gentle {
+  transition: all var(--duration-medium) var(--ease-gentle);
+}
+
+/* Glass effect */
+.glass {
+  background: rgba(253, 248, 243, 0.8);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(200, 180, 160, 0.2);
+}
+
+/* Journal prompt card styling */
+.prompt-card {
+  background: var(--color-cream);
+  border: 1px solid var(--color-sand);
+  border-radius: 24px;
+  box-shadow: 
+    0 4px 6px -1px rgba(0, 0, 0, 0.05),
+    0 2px 4px -1px rgba(0, 0, 0, 0.03);
+}
+
+/* Textarea for journaling */
+.journal-textarea {
+  font-family: var(--font-serif);
+  font-size: 1.125rem;
+  line-height: 1.8;
+  background: transparent;
+  border: none;
+  resize: none;
+  color: var(--color-charcoal);
+}
+
+.journal-textarea::placeholder {
+  color: var(--color-terracotta);
+  opacity: 0.6;
+}
+
+.journal-textarea:focus {
+  outline: none;
+}
+
+/* Canvas element */
+.canvas-element {
+  position: absolute;
+  cursor: move;
+  user-select: none;
+  touch-action: none;
+}
+
+.canvas-element.selected {
+  outline: 2px solid var(--color-terracotta);
+  outline-offset: 4px;
+}
+
+/* Resize handles */
+.resize-handle {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  background: var(--color-cream);
+  border: 2px solid var(--color-terracotta);
+  border-radius: 50%;
+}
