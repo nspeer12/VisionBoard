@@ -458,6 +458,16 @@ export default function BoardPage() {
                   onRegenerate={() => generateImage(item.id, item.data.prompt, item.data.style)}
                 />
               ))}
+              {/* Add New Image Button */}
+              <button
+                onClick={() => setShowAddModal(true)}
+                className="collage-item-small rounded-2xl border-2 border-dashed border-sand/70 bg-cream-dark/30 hover:bg-cream-dark/50 hover:border-terracotta/50 transition-all duration-300 flex flex-col items-center justify-center gap-2 group"
+              >
+                <div className="w-12 h-12 rounded-full bg-cream flex items-center justify-center group-hover:bg-terracotta/10 group-hover:scale-110 transition-all duration-300">
+                  <Plus className="w-6 h-6 text-slate group-hover:text-terracotta" />
+                </div>
+                <span className="font-sans text-sm text-slate group-hover:text-charcoal">Add Image</span>
+              </button>
             </div>
           )}
         </div>
