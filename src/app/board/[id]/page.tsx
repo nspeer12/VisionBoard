@@ -38,6 +38,7 @@ interface CollageItem {
     affirmation: string;
     gridSize: "small" | "medium" | "large";
     status: "pending" | "complete" | "error";
+    personalConnection?: string;
   };
 }
 
@@ -669,6 +670,14 @@ function EditImageModal({ item, isGenerating, onClose, onSave, onRegenerate, onD
               alt={item.data.title}
               className="w-full h-full object-cover"
             />
+          </div>
+        )}
+
+        {/* Personal Connection - shows why this was generated */}
+        {item.data.personalConnection && (
+          <div className="mx-6 mb-4 p-3 rounded-xl bg-lavender/20 border border-lavender/30">
+            <p className="font-sans text-xs text-slate/70 mb-1">From your journal:</p>
+            <p className="font-serif text-sm text-charcoal italic">{item.data.personalConnection}</p>
           </div>
         )}
 
