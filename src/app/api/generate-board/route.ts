@@ -12,6 +12,22 @@ interface GenerateBoardRequest {
   responses: JournalResponse[];
 }
 
+// Available styles for variety
+const availableStyles = [
+  "photography",
+  "watercolor", 
+  "abstract",
+  "oilpainting",
+  "minimalist",
+  "impressionist",
+  "cinematic",
+  "macro",
+  "landscape",
+  "symbolic",
+  "dreamy",
+  "vintage",
+];
+
 export async function POST(request: Request) {
   console.log("[generate-board] Request received");
   
@@ -20,66 +36,83 @@ export async function POST(request: Request) {
     console.log("[generate-board] Responses count:", responses.length);
 
     // Build rich context from journal responses
-    const journalContext = responses
-      .filter(r => r.answer.trim().length > 0)
+    const answeredResponses = responses.filter(r => r.answer.trim().length > 0);
+    const journalContext = answeredResponses
       .map((r) => `Q: ${r.question}\nA: ${r.answer}`)
       .join("\n\n");
 
-    // Extract key personal details for more targeted generation
-    const hasResponses = responses.some(r => r.answer.trim().length > 0);
-
-    console.log("[generate-board] Calling xAI to generate personalized themes...");
+    // Determine how many images to generate based on journal depth
+    const totalAnswers = answeredResponses.length;
+    const totalWordCount = answeredResponses.reduce((sum, r) => sum + r.answer.split(/\s+/).length, 0);
     
-    const systemPrompt = `You are an expert vision board designer who creates deeply personalized, meaningful boards. Your job is to transform someone's journal reflections into vivid, specific imagery that speaks directly to THEIR unique goals, values, and dreams.
+    // Base: 10 images, up to 15 for rich journals
+    let imageCount = 10;
+    if (totalAnswers >= 10 && totalWordCount > 200) imageCount = 15;
+    else if (totalAnswers >= 7 && totalWordCount > 100) imageCount = 13;
+    else if (totalAnswers >= 4) imageCount = 12;
+    
+    console.log(`[generate-board] Generating ${imageCount} images (${totalAnswers} answers, ${totalWordCount} words)`);
 
-CRITICAL: Read the journal responses carefully and extract:
-1. SPECIFIC details they mentioned (activities, places, feelings, people roles)
-2. Their ACTUAL WORDS and phrases - use these in affirmations
-3. The FEELING they want (not generic "success" but their specific emotion)
-4. Any OBSTACLES they mentioned - create imagery of overcoming them
-5. Their identity/who they're becoming
+    const hasResponses = totalAnswers > 0;
 
-Return a JSON object with this exact structure:
+    const systemPrompt = `You are an expert vision board designer creating deeply personalized, evocative imagery. Your goal is to transform journal reflections into powerful visual metaphors.
+
+CRITICAL RULES FOR IMAGE PROMPTS:
+1. NEVER include people, human figures, faces, or body parts
+2. Focus on: scenes, objects, nature, textures, atmospheres, symbolic items
+3. Convey emotions through environment, lighting, and composition
+4. Use metaphors: "achievement" = mountain peak, trophy, sunrise; "peace" = still water, zen garden, soft clouds
+5. Be SPECIFIC and DETAILED in descriptions
+
+Return a JSON object:
 {
   "themes": [
     {
-      "title": "Short theme name",
-      "imagePrompt": "Detailed, specific prompt for AI image generation",
-      "affirmation": "Personal affirmation using THEIR words/themes",
-      "gridSize": "small" | "medium" | "large",
-      "personalConnection": "Brief note on how this connects to their journal"
+      "title": "Short theme name (2-3 words)",
+      "imagePrompt": "Detailed scene description WITHOUT any people - focus on objects, nature, atmosphere",
+      "affirmation": "Personal affirmation using their words/themes",
+      "style": "one of: photography, watercolor, abstract, oilpainting, minimalist, impressionist, cinematic, macro, landscape, symbolic, dreamy, vintage",
+      "gridSize": "small | medium | large"
     }
   ]
 }
 
-PERSONALIZATION GUIDELINES:
-- If they mentioned "morning runs" → show a specific morning running scene, not generic "fitness"
-- If they want to "feel calm" → show their version of calm (beach? mountains? reading nook?)
-- If they mentioned a specific career goal → visualize that specific achievement
-- If they wrote about relationships → show connection in the way THEY described it
-- Use their exact phrases in affirmations when powerful ("I am becoming..." → use their words)
-- If they mentioned a "word for the year" → this should be the centerpiece theme
+STYLE GUIDELINES (vary these across the board for visual interest):
+- photography: Real-world scenes, professional quality
+- watercolor: Soft, flowing, artistic, emotional
+- abstract: Bold shapes, conceptual, modern art
+- oilpainting: Rich textures, classical, museum-quality
+- minimalist: Clean, simple, zen, negative space
+- impressionist: Soft focus, dappled light, dreamy
+- cinematic: Dramatic lighting, film-like, widescreen feel
+- macro: Extreme close-ups, intricate details, textures
+- landscape: Epic vistas, nature, panoramic
+- symbolic: Meaningful objects, metaphorical imagery
+- dreamy: Ethereal, soft glow, magical atmosphere
+- vintage: Nostalgic, film grain, muted tones
 
-IMAGE PROMPT GUIDELINES:
-- Be SPECIFIC: "woman journaling at sunrise on wooden dock over misty lake" not "peaceful scene"
-- Include atmosphere: lighting, time of day, weather, mood
-- Photorealistic, dreamy, soft ethereal lighting
-- NO text, logos, or identifiable faces
-- Include sensory details: textures, colors, atmosphere
+IMAGE PROMPT EXAMPLES (no people):
+- "achievement" → "Golden trophy on marble pedestal, sunlight streaming through window, dust particles in light, sense of accomplishment"
+- "peace" → "Still pond at dawn, single lotus flower, mist rising from water, mountains reflected, zen atmosphere"  
+- "growth" → "Seedling pushing through rich dark soil, dewdrops on leaves, soft morning light, macro detail"
+- "creativity" → "Artist's palette covered in vibrant paint, scattered brushes, canvas texture, studio window light"
+- "connection" → "Two coffee cups on wooden table by window, steam rising, cozy blanket, rain outside"
+- "adventure" → "Worn leather hiking boots on mountain trail, map and compass, pine forest backdrop"
 
-GRID SIZE DISTRIBUTION (for 9 total images):
-- 2 "large" (2x2) - for the MOST important themes (year word, primary goal)
-- 3 "medium" (1x2 or 2x1) - for significant themes
-- 4 "small" (1x1) - for supporting themes
+GRID SIZE DISTRIBUTION for ${imageCount} images:
+- 2-3 "large" (most important themes, year word, primary goals)
+- 4-5 "medium" (significant supporting themes)
+- Remaining "small" (complementary imagery)
 
-Generate EXACTLY 9 themes that tell the story of their 2026 vision.`;
+Generate EXACTLY ${imageCount} themes with VARIED styles (use at least 6 different styles).
+Extract specific details from the journal and translate them into vivid scene descriptions.`;
 
     const { text } = await generateText({
       model: xai("grok-3-mini"),
       system: systemPrompt,
       prompt: hasResponses 
-        ? `Create a deeply personalized vision board based on these journal reflections. Extract specific details and use their actual words:\n\n${journalContext}`
-        : `Create a beautiful, inspiring vision board for someone beginning their 2026 journey. Focus on themes of new beginnings, self-discovery, growth, peace, creativity, connection, adventure, health, and abundance. Make the imagery vivid and aspirational.`,
+        ? `Create a deeply personalized vision board with ${imageCount} images based on these journal reflections. Remember: NO people in any image prompts - only scenes, objects, nature, and atmosphere:\n\n${journalContext}`
+        : `Create a beautiful, inspiring vision board with ${imageCount} images for someone beginning their 2026 journey. Themes: new beginnings, self-discovery, growth, peace, creativity, connection, adventure, health, abundance, dreams. Remember: NO people in any image prompts - only scenes, objects, nature, and atmosphere.`,
     });
 
     console.log("[generate-board] xAI response received");
@@ -90,106 +123,167 @@ Generate EXACTLY 9 themes that tell the story of their 2026 vision.`;
       if (jsonMatch) {
         boardData = JSON.parse(jsonMatch[0]);
         console.log("[generate-board] Parsed themes:", boardData.themes?.length || 0);
-        
-        // Log personalization for debugging
-        boardData.themes?.forEach((t: any, i: number) => {
-          console.log(`[generate-board] Theme ${i + 1}: ${t.title} - ${t.personalConnection || 'no connection noted'}`);
-        });
       } else {
         throw new Error("No JSON found in response");
       }
     } catch (parseError) {
       console.log("[generate-board] Parse error, using fallback:", parseError);
-      // Fallback for when AI fails or no journal responses
+      // Rich fallback with varied styles and no people
       boardData = {
         themes: [
           {
             title: "New Beginnings",
-            imagePrompt: "Majestic sunrise breaking through morning mist over a calm mountain lake, golden light rays streaming through pine trees, reflection on still water, sense of possibility and fresh starts, photorealistic, dreamy atmosphere",
+            imagePrompt: "Majestic sunrise breaking through morning mist over a calm mountain lake, golden light rays streaming through pine trees, reflection on still water, sense of possibility",
             affirmation: "Every sunrise brings new possibilities",
+            style: "landscape",
             gridSize: "large",
           },
           {
             title: "Inner Peace",
-            imagePrompt: "Person meditating on a wooden dock extending into a serene misty lake at dawn, soft pink and gold sky, mountains in distance, perfect stillness, photorealistic, ethereal lighting",
+            imagePrompt: "Zen garden with perfectly raked sand patterns, single smooth stone, cherry blossom petals floating down, soft morning light, tranquil atmosphere",
             affirmation: "I am calm, centered, and at peace",
+            style: "minimalist",
             gridSize: "medium",
           },
           {
-            title: "Growth & Learning",
-            imagePrompt: "Cozy reading corner with floor-to-ceiling bookshelves, warm afternoon light streaming through large window, comfortable armchair with blanket, steaming cup of tea, plants, photorealistic, inviting atmosphere",
-            affirmation: "I grow wiser and stronger each day",
+            title: "Growth",
+            imagePrompt: "Tiny seedling pushing through rich dark soil, morning dewdrops on delicate leaves, soft golden backlight, extreme macro detail showing life force",
+            affirmation: "I grow stronger each day",
+            style: "macro",
             gridSize: "small",
           },
           {
             title: "Creative Flow",
-            imagePrompt: "Artist's studio bathed in warm natural light, canvases with vibrant abstract art, paintbrushes in mason jars, creative chaos of art supplies, large windows overlooking garden, photorealistic, inspiring atmosphere",
-            affirmation: "My creativity flows freely and abundantly",
+            imagePrompt: "Artist's workspace with vibrant paint splashes on wooden table, scattered brushes in mason jars, half-finished canvas, golden afternoon light through dusty window",
+            affirmation: "My creativity flows freely",
+            style: "photography",
             gridSize: "medium",
           },
           {
-            title: "Connection & Love",
-            imagePrompt: "Intimate outdoor dinner party at golden hour, long wooden table with candles and wildflowers, string lights overhead, warm laughter atmosphere, wine glasses catching sunlight, photorealistic, magical evening",
-            affirmation: "I am surrounded by love and belonging",
+            title: "Connection",
+            imagePrompt: "Two steaming coffee cups on rustic wooden table by rain-streaked window, cozy blanket draped on chair, warm candlelight, intimate atmosphere",
+            affirmation: "I am surrounded by love",
+            style: "cinematic",
             gridSize: "large",
           },
           {
-            title: "Adventure Awaits",
-            imagePrompt: "Winding mountain road through dramatic landscape at sunset, golden light painting the hills, sense of journey and possibility, open road ahead, photorealistic, cinematic wide shot",
-            affirmation: "Life is an adventure I embrace fully",
+            title: "Adventure",
+            imagePrompt: "Winding mountain path disappearing into misty peaks, wildflowers along trail edge, dramatic clouds, sense of journey and discovery",
+            affirmation: "Life is an adventure I embrace",
+            style: "landscape",
             gridSize: "small",
           },
           {
-            title: "Vibrant Health",
-            imagePrompt: "Morning trail run through misty forest, dappled sunlight through trees, fresh energy, athletic movement through nature, dewdrops on leaves, photorealistic, vitality and wellness",
-            affirmation: "My body is strong and full of energy",
+            title: "Vitality",
+            imagePrompt: "Fresh green smoothie in glass jar surrounded by vibrant fruits and vegetables, morning kitchen light, dewdrops on produce, health and energy",
+            affirmation: "My body is strong and energized",
+            style: "photography",
             gridSize: "medium",
           },
           {
             title: "Abundance",
-            imagePrompt: "Overflowing farmers market stall with colorful fresh produce, golden morning light, artisan breads, fresh flowers, sense of plenty and gratitude, photorealistic, rich colors",
-            affirmation: "Abundance flows into my life effortlessly",
+            imagePrompt: "Overflowing harvest basket with colorful fresh produce, golden wheat field in background, warm sunset light, sense of plenty and gratitude",
+            affirmation: "Abundance flows into my life",
+            style: "impressionist",
             gridSize: "small",
           },
           {
-            title: "Dream Life",
-            imagePrompt: "Breathtaking sunset view from modern home with floor-to-ceiling windows, mountains and ocean in distance, minimalist interior, sense of achievement and contentment, photorealistic, aspirational",
-            affirmation: "I am creating the life of my dreams",
+            title: "Dreams",
+            imagePrompt: "Open journal with handwritten goals on wooden desk, golden pen, soft window light, cup of tea, dreamy bokeh background",
+            affirmation: "I am creating my dream life",
+            style: "dreamy",
+            gridSize: "small",
+          },
+          {
+            title: "Clarity",
+            imagePrompt: "Crystal clear mountain stream flowing over smooth stones, light refracting through water, forest reflected on surface, pure and serene",
+            affirmation: "My mind is clear and focused",
+            style: "watercolor",
+            gridSize: "medium",
+          },
+          {
+            title: "Courage",
+            imagePrompt: "Single lit candle flame in darkness, warm glow illuminating surroundings, sense of hope and bravery, intimate and powerful",
+            affirmation: "I have the courage to grow",
+            style: "cinematic",
+            gridSize: "small",
+          },
+          {
+            title: "Gratitude",
+            imagePrompt: "Golden wheat field at sunset, warm light painting the grain, gentle breeze visible in movement, expansive sky, thankfulness",
+            affirmation: "I am grateful for this moment",
+            style: "vintage",
             gridSize: "small",
           },
         ],
       };
     }
 
-    // Ensure exactly 9 themes with proper grid distribution
+    // Process themes
     let themes = boardData.themes || [];
     
-    // If we have fewer than 9, pad with defaults
-    while (themes.length < 9) {
-      const defaults = [
-        { title: "Possibility", imagePrompt: "Vast starry night sky over mountain silhouette, milky way visible, sense of infinite possibility, photorealistic", affirmation: "Anything is possible", gridSize: "small" },
-        { title: "Gratitude", imagePrompt: "Golden wheat field at sunset, warm light, peaceful countryside, thankfulness, photorealistic", affirmation: "I am grateful for this moment", gridSize: "small" },
-        { title: "Courage", imagePrompt: "Person standing at edge of cliff overlooking vast valley at sunrise, brave stance, new horizons, photorealistic", affirmation: "I have the courage to grow", gridSize: "small" },
-      ];
-      themes.push(defaults[themes.length % defaults.length]);
+    // Ensure we have enough themes, pad with defaults if needed
+    const defaultThemes = [
+      { title: "Possibility", imagePrompt: "Vast starry night sky, milky way stretching across darkness, silhouette of mountains, sense of infinite possibility", affirmation: "Anything is possible", style: "landscape", gridSize: "small" },
+      { title: "Balance", imagePrompt: "Smooth stones stacked in perfect balance on beach, calm ocean in background, zen meditation concept", affirmation: "I find balance in all things", style: "minimalist", gridSize: "small" },
+      { title: "Joy", imagePrompt: "Field of wildflowers in full bloom, butterflies dancing, golden sunlight, pure happiness and freedom", affirmation: "Joy fills my days", style: "impressionist", gridSize: "small" },
+      { title: "Focus", imagePrompt: "Single leaf with perfect detail, morning dew drops, soft blurred background, clarity and intention", affirmation: "I am focused and intentional", style: "macro", gridSize: "small" },
+      { title: "Serenity", imagePrompt: "Misty forest path at dawn, light filtering through ancient trees, moss-covered stones, peaceful solitude", affirmation: "Peace flows through me", style: "dreamy", gridSize: "small" },
+    ];
+    
+    while (themes.length < imageCount) {
+      themes.push(defaultThemes[themes.length % defaultThemes.length]);
     }
     
-    // Trim to exactly 9
-    themes = themes.slice(0, 9);
+    // Trim to target count
+    themes = themes.slice(0, imageCount);
     
-    // Ensure proper grid size distribution: 2 large, 3 medium, 4 small
-    const sizeDistribution = ["large", "large", "medium", "medium", "medium", "small", "small", "small", "small"];
-    themes = themes.map((theme: any, index: number) => ({
-      ...theme,
-      gridSize: theme.gridSize || sizeDistribution[index],
-    }));
+    // Ensure style variety - assign styles if missing or duplicate
+    const usedStyles = new Set<string>();
+    themes = themes.map((theme: any, index: number) => {
+      let style = theme.style;
+      
+      // If no style or we've used it too many times, pick a new one
+      if (!style || !availableStyles.includes(style)) {
+        style = availableStyles[index % availableStyles.length];
+      }
+      
+      // Track usage but allow some repeats for larger boards
+      usedStyles.add(style);
+      
+      return { ...theme, style };
+    });
+    
+    // Ensure proper grid size distribution
+    const largeCount = Math.min(3, Math.floor(imageCount * 0.2));
+    const mediumCount = Math.min(5, Math.floor(imageCount * 0.35));
+    
+    themes = themes.map((theme: any, index: number) => {
+      let gridSize = theme.gridSize;
+      
+      if (index < largeCount) gridSize = "large";
+      else if (index < largeCount + mediumCount) gridSize = "medium";
+      else gridSize = "small";
+      
+      return { ...theme, gridSize };
+    });
+
+    // Shuffle to mix sizes throughout the grid (but keep first as large)
+    const firstTheme = themes[0];
+    const rest = themes.slice(1);
+    for (let i = rest.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [rest[i], rest[j]] = [rest[j], rest[i]];
+    }
+    themes = [firstTheme, ...rest];
 
     // Convert themes to collage elements
     const elements = themes.map((theme: { 
       title: string; 
       imagePrompt: string; 
       affirmation: string;
-      gridSize?: string;
+      style: string;
+      gridSize: string;
       personalConnection?: string;
     }, index: number) => {
       return {
@@ -204,10 +298,10 @@ Generate EXACTLY 9 themes that tell the story of their 2026 vision.`;
           src: "",
           prompt: theme.imagePrompt,
           isGenerated: true,
-          style: "photorealistic",
+          style: theme.style,
           title: theme.title,
           affirmation: theme.affirmation,
-          gridSize: theme.gridSize || "small",
+          gridSize: theme.gridSize,
           personalConnection: theme.personalConnection,
           status: "pending",
         },
@@ -215,6 +309,7 @@ Generate EXACTLY 9 themes that tell the story of their 2026 vision.`;
     });
 
     console.log("[generate-board] Generated elements:", elements.length);
+    console.log("[generate-board] Styles used:", [...new Set(themes.map((t: any) => t.style))].join(", "));
     console.log("[generate-board] Success!");
     
     return NextResponse.json({ 

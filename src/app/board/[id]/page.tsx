@@ -42,6 +42,21 @@ interface CollageItem {
   };
 }
 
+const styleLabels: Record<string, string> = {
+  photography: "Photography",
+  watercolor: "Watercolor",
+  abstract: "Abstract",
+  oilpainting: "Oil Painting",
+  minimalist: "Minimalist",
+  impressionist: "Impressionist",
+  cinematic: "Cinematic",
+  macro: "Macro",
+  landscape: "Landscape",
+  symbolic: "Symbolic",
+  dreamy: "Dreamy",
+  vintage: "Vintage",
+};
+
 export default function BoardPage() {
   const params = useParams();
   const router = useRouter();
@@ -85,26 +100,26 @@ export default function BoardPage() {
       
       pendingImages.forEach((el) => {
         console.log("[Board] Starting generation for:", el.id);
-        generateImage(el.id, (el.data as any).prompt);
+        generateImage(el.id, (el.data as any).prompt, (el.data as any).style);
       });
     };
     load();
   }, [boardId, router]);
 
   // Generate image
-  const generateImage = async (elementId: string, prompt: string) => {
+  const generateImage = async (elementId: string, prompt: string, style?: string) => {
     if (!boardRef.current) return;
     
-    console.log("[Client] Starting image generation:", { elementId, prompt });
+    console.log("[Client] Starting image generation:", { elementId, prompt, style });
     setGeneratingImages(prev => new Set(prev).add(elementId));
 
     try {
       const response = await fetch("/api/generate-image", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt }),
+        body: JSON.stringify({ prompt, style: style || "photography" }),
       });
-
+      
       if (response.ok) {
         const data = await response.json();
         const { imageUrl } = data;
@@ -181,36 +196,37 @@ export default function BoardPage() {
     title: string;
     affirmation: string;
     gridSize: "small" | "medium" | "large";
+    style: string;
   }) => {
     if (!board) return;
-    
-    const newElement: CanvasElement = {
-      id: crypto.randomUUID(),
-      type: "image",
+      
+      const newElement: CanvasElement = {
+        id: crypto.randomUUID(),
+        type: "image",
       position: { x: 0, y: 0 },
-      size: { width: 350, height: 280 },
-      rotation: 0,
-      layer: board.canvas.elements.length,
-      locked: false,
-      data: {
+        size: { width: 350, height: 280 },
+        rotation: 0,
+        layer: board.canvas.elements.length,
+        locked: false,
+        data: {
         src: "",
         prompt: data.prompt,
         isGenerated: true,
-        style: "photorealistic",
+        style: data.style,
         title: data.title,
         affirmation: data.affirmation,
         gridSize: data.gridSize,
         status: "pending" as const,
-      },
-    };
-    
-    const elements = [...board.canvas.elements, newElement];
+        },
+      };
+
+      const elements = [...board.canvas.elements, newElement];
     const newCanvas = { ...board.canvas, elements };
     await updateBoard(board.id, { canvas: newCanvas });
     setBoard({ ...board, canvas: newCanvas });
     
     // Start generating the image
-    generateImage(newElement.id, data.prompt);
+    generateImage(newElement.id, data.prompt, data.style);
     setShowAddModal(false);
   }, [board]);
 
@@ -296,18 +312,18 @@ export default function BoardPage() {
       {/* Header */}
       <header className="sticky top-0 z-50 bg-cream/80 backdrop-blur-md border-b border-sand/50">
         <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <button
-              onClick={() => router.push("/")}
-              className="p-2 rounded-xl hover:bg-cream-dark transition-gentle text-slate hover:text-charcoal"
-            >
-              <Home className="w-5 h-5" />
-            </button>
-            <div className="h-6 w-px bg-sand" />
+        <div className="flex items-center gap-4">
+          <button
+            onClick={() => router.push("/")}
+            className="p-2 rounded-xl hover:bg-cream-dark transition-gentle text-slate hover:text-charcoal"
+          >
+            <Home className="w-5 h-5" />
+          </button>
+          <div className="h-6 w-px bg-sand" />
             <h1 className="font-display text-xl text-charcoal">{board?.title}</h1>
-          </div>
+        </div>
 
-          <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2">
             {/* Add Image Button */}
             <button
               onClick={() => setShowAddModal(true)}
@@ -317,38 +333,38 @@ export default function BoardPage() {
               <span className="hidden sm:inline">Add Image</span>
             </button>
 
-            <button
+          <button
               onClick={() => setShowBackgroundPicker(!showBackgroundPicker)}
-              className={cn(
+            className={cn(
                 "p-2.5 rounded-xl transition-gentle relative",
                 showBackgroundPicker ? "bg-cream-dark text-charcoal" : "hover:bg-cream-dark text-slate hover:text-charcoal"
-              )}
-            >
+            )}
+          >
               <Palette className="w-5 h-5" />
-            </button>
+          </button>
 
-            <button
-              onClick={exportPNG}
-              disabled={isExporting}
-              className={cn(
+          <button
+            onClick={exportPNG}
+            disabled={isExporting}
+            className={cn(
                 "flex items-center gap-2 px-4 py-2.5 rounded-xl transition-gentle font-sans text-sm",
-                isExporting 
-                  ? "bg-sand text-slate cursor-not-allowed" 
-                  : "bg-terracotta text-cream hover:bg-terracotta-dark"
-              )}
-            >
-              {isExporting ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
+              isExporting 
+                ? "bg-sand text-slate cursor-not-allowed" 
+                : "bg-terracotta text-cream hover:bg-terracotta-dark"
+            )}
+          >
+            {isExporting ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
                   Exporting...
-                </>
-              ) : (
-                <>
-                  <Download className="w-4 h-4" />
+              </>
+            ) : (
+              <>
+                <Download className="w-4 h-4" />
                   Export
-                </>
-              )}
-            </button>
+              </>
+            )}
+          </button>
           </div>
         </div>
 
@@ -439,7 +455,7 @@ export default function BoardPage() {
                   index={index}
                   isGenerating={generatingImages.has(item.id)}
                   onEdit={() => setEditingItem(item)}
-                  onRegenerate={() => generateImage(item.id, item.data.prompt)}
+                  onRegenerate={() => generateImage(item.id, item.data.prompt, item.data.style)}
                 />
               ))}
             </div>
@@ -448,7 +464,7 @@ export default function BoardPage() {
       </main>
 
       {/* Edit Modal */}
-      <AnimatePresence>
+        <AnimatePresence>
         {editingItem && (
           <EditImageModal
             item={editingItem}
@@ -458,9 +474,9 @@ export default function BoardPage() {
               updateElement(editingItem.id, updates);
               setEditingItem(null);
             }}
-            onRegenerate={(newPrompt) => {
-              updateElement(editingItem.id, { prompt: newPrompt, status: "pending" as const, src: "" });
-              generateImage(editingItem.id, newPrompt);
+            onRegenerate={(newPrompt, style) => {
+              updateElement(editingItem.id, { prompt: newPrompt, style, status: "pending" as const, src: "" });
+              generateImage(editingItem.id, newPrompt, style);
               setEditingItem(null);
             }}
             onDelete={() => deleteElement(editingItem.id)}
@@ -474,9 +490,9 @@ export default function BoardPage() {
           <AddImageModal
             onClose={() => setShowAddModal(false)}
             onAdd={addElement}
-          />
-        )}
-      </AnimatePresence>
+            />
+          )}
+        </AnimatePresence>
     </div>
   );
 }
@@ -523,8 +539,8 @@ function CollageCard({ item, index, isGenerating, onEdit, onRegenerate }: Collag
           src={item.data.src}
           alt={item.data.title}
           className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-          draggable={false}
-        />
+              draggable={false}
+            />
       ) : isGenerating || item.data.status === "pending" ? (
         <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-cream to-cream-dark">
           <div className="relative">
@@ -535,13 +551,13 @@ function CollageCard({ item, index, isGenerating, onEdit, onRegenerate }: Collag
           <p className="mt-1 font-sans text-xs text-slate/60 max-w-[200px] text-center line-clamp-2">
             {item.data.title || "Your vision"}
           </p>
-        </div>
-      ) : (
+            </div>
+          ) : (
         <div className="w-full h-full flex flex-col items-center justify-center bg-cream-dark">
           <Sparkles className="w-12 h-12 text-sand mb-2" />
           <p className="font-sans text-xs text-slate/60">Click to edit</p>
-        </div>
-      )}
+            </div>
+          )}
 
       {/* Hover Overlay */}
       <AnimatePresence>
@@ -586,7 +602,7 @@ function CollageCard({ item, index, isGenerating, onEdit, onRegenerate }: Collag
               >
                 <RefreshCw className={cn("w-4 h-4", isGenerating && "animate-spin")} />
               </button>
-            </div>
+        </div>
           </motion.div>
         )}
       </AnimatePresence>
@@ -600,12 +616,13 @@ interface EditImageModalProps {
   isGenerating: boolean;
   onClose: () => void;
   onSave: (updates: Partial<CollageItem["data"]>) => void;
-  onRegenerate: (prompt: string) => void;
+  onRegenerate: (prompt: string, style: string) => void;
   onDelete: () => void;
 }
 
 function EditImageModal({ item, isGenerating, onClose, onSave, onRegenerate, onDelete }: EditImageModalProps) {
   const [prompt, setPrompt] = useState(item.data.prompt || "");
+  const [style, setStyle] = useState(item.data.style || "photography");
   const [title, setTitle] = useState(item.data.title || "");
   const [affirmation, setAffirmation] = useState(item.data.affirmation || "");
   const [gridSize, setGridSize] = useState<"small" | "medium" | "large">(item.data.gridSize || "medium");
@@ -613,15 +630,16 @@ function EditImageModal({ item, isGenerating, onClose, onSave, onRegenerate, onD
   const hasChanges = prompt !== item.data.prompt || 
                      title !== item.data.title || 
                      affirmation !== item.data.affirmation ||
-                     gridSize !== item.data.gridSize;
+                     gridSize !== item.data.gridSize ||
+                     style !== item.data.style;
   
   const handleSave = () => {
-    onSave({ title, affirmation, gridSize });
+    onSave({ title, affirmation, gridSize, style });
   };
 
   const handleRegenerate = () => {
     if (prompt.trim()) {
-      onRegenerate(prompt.trim());
+      onRegenerate(prompt.trim(), style);
     }
   };
 
@@ -649,7 +667,7 @@ function EditImageModal({ item, isGenerating, onClose, onSave, onRegenerate, onD
             <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-terracotta to-terracotta-dark flex items-center justify-center">
               <Pencil className="w-5 h-5 text-cream" />
             </div>
-            <div>
+      <div>
               <h2 className="font-display text-xl text-charcoal">Edit Image</h2>
               <p className="font-sans text-sm text-slate">Customize your vision</p>
             </div>
@@ -686,41 +704,78 @@ function EditImageModal({ item, isGenerating, onClose, onSave, onRegenerate, onD
           {/* Prompt */}
           <div>
             <label className="font-sans text-sm text-slate mb-2 block">Image Prompt</label>
-            <textarea
+        <textarea
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
               placeholder="Describe the image you want to generate..."
               className="w-full p-3 rounded-xl bg-cream-dark/50 border border-sand/50 font-serif text-charcoal placeholder:text-slate/50 resize-none focus:outline-none focus:border-terracotta/50 transition-gentle"
-              rows={3}
-            />
-          </div>
+          rows={3}
+        />
+      </div>
 
           {/* Title */}
-          <div>
+      <div>
             <label className="font-sans text-sm text-slate mb-2 block">Title</label>
-            <input
+        <input
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="e.g., Inner Peace"
               className="w-full p-3 rounded-xl bg-cream-dark/50 border border-sand/50 font-sans text-charcoal placeholder:text-slate/50 focus:outline-none focus:border-terracotta/50 transition-gentle"
-            />
-          </div>
+        />
+      </div>
 
           {/* Affirmation */}
-          <div>
+      <div>
             <label className="font-sans text-sm text-slate mb-2 block">Affirmation</label>
-            <input
+        <input
               type="text"
               value={affirmation}
               onChange={(e) => setAffirmation(e.target.value)}
               placeholder="e.g., I am calm and centered"
               className="w-full p-3 rounded-xl bg-cream-dark/50 border border-sand/50 font-serif italic text-charcoal placeholder:text-slate/50 focus:outline-none focus:border-terracotta/50 transition-gentle"
-            />
+        />
+      </div>
+
+          {/* Style */}
+          <div>
+            <label className="font-sans text-sm text-slate mb-2 block">Style</label>
+            <div className="grid grid-cols-3 gap-2">
+              {Object.entries(styleLabels).slice(0, 6).map(([key, label]) => (
+                <button
+                  key={key}
+                  onClick={() => setStyle(key)}
+                  className={cn(
+                    "py-2 px-2 rounded-xl border-2 font-sans text-xs transition-gentle",
+                    style === key 
+                      ? "border-terracotta bg-terracotta/10 text-charcoal" 
+                      : "border-sand/50 text-slate hover:border-sand"
+                  )}
+                >
+                  {label}
+                </button>
+              ))}
+    </div>
+            <div className="grid grid-cols-3 gap-2 mt-2">
+              {Object.entries(styleLabels).slice(6).map(([key, label]) => (
+                <button
+                  key={key}
+                  onClick={() => setStyle(key)}
+                  className={cn(
+                    "py-2 px-2 rounded-xl border-2 font-sans text-xs transition-gentle",
+                    style === key 
+                      ? "border-terracotta bg-terracotta/10 text-charcoal" 
+                      : "border-sand/50 text-slate hover:border-sand"
+                  )}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
           </div>
 
           {/* Grid Size */}
-          <div>
+        <div>
             <label className="font-sans text-sm text-slate mb-2 block">Size in Grid</label>
             <div className="flex gap-2">
               {(["small", "medium", "large"] as const).map((size) => (
@@ -737,7 +792,7 @@ function EditImageModal({ item, isGenerating, onClose, onSave, onRegenerate, onD
                   {size}
                 </button>
               ))}
-            </div>
+        </div>
           </div>
 
           {/* Actions */}
@@ -763,30 +818,30 @@ function EditImageModal({ item, isGenerating, onClose, onSave, onRegenerate, onD
               Save Changes
             </button>
             
-            <button
+        <button
               onClick={handleRegenerate}
               disabled={!prompt.trim() || isGenerating}
-              className={cn(
+          className={cn(
                 "flex-1 py-3 px-4 rounded-xl font-sans text-sm font-medium transition-gentle flex items-center justify-center gap-2",
                 prompt.trim() && !isGenerating
                   ? "bg-gradient-to-r from-terracotta to-terracotta-dark text-cream hover:shadow-lg"
                   : "bg-sand/50 text-slate/50 cursor-not-allowed"
-              )}
-            >
-              {isGenerating ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  Generating...
-                </>
-              ) : (
-                <>
-                  <Sparkles className="w-4 h-4" />
-                  Regenerate
-                </>
-              )}
-            </button>
-          </div>
-        </div>
+          )}
+        >
+          {isGenerating ? (
+            <>
+              <Loader2 className="w-4 h-4 animate-spin" />
+              Generating...
+            </>
+          ) : (
+            <>
+              <Sparkles className="w-4 h-4" />
+              Regenerate
+            </>
+          )}
+        </button>
+      </div>
+    </div>
       </motion.div>
     </motion.div>
   );
@@ -795,20 +850,21 @@ function EditImageModal({ item, isGenerating, onClose, onSave, onRegenerate, onD
 // Add Image Modal
 interface AddImageModalProps {
   onClose: () => void;
-  onAdd: (data: { prompt: string; title: string; affirmation: string; gridSize: "small" | "medium" | "large" }) => void;
+  onAdd: (data: { prompt: string; title: string; affirmation: string; gridSize: "small" | "medium" | "large"; style: string }) => void;
 }
 
 const inspirationPrompts = [
-  { prompt: "A serene mountain lake at golden hour", title: "Serenity" },
-  { prompt: "A cozy reading nook with warm sunlight", title: "Comfort" },
-  { prompt: "A path through an ancient forest", title: "Journey" },
-  { prompt: "A peaceful garden with blooming flowers", title: "Growth" },
-  { prompt: "An open road leading to the horizon", title: "Freedom" },
-  { prompt: "A tranquil beach at sunrise", title: "Peace" },
+  { prompt: "Zen garden with raked sand patterns, single smooth stone, soft morning light", title: "Serenity", style: "minimalist" },
+  { prompt: "Cozy reading nook with stacked books, warm blanket, steaming tea by window", title: "Comfort", style: "photography" },
+  { prompt: "Winding forest path disappearing into morning mist, ancient trees", title: "Journey", style: "cinematic" },
+  { prompt: "Seedling pushing through rich soil, dewdrops catching light", title: "Growth", style: "macro" },
+  { prompt: "Open road stretching to mountains, dramatic clouds, sense of freedom", title: "Freedom", style: "landscape" },
+  { prompt: "Still lake at dawn reflecting pink sky, single lotus flower floating", title: "Peace", style: "watercolor" },
 ];
 
 function AddImageModal({ onClose, onAdd }: AddImageModalProps) {
   const [prompt, setPrompt] = useState("");
+  const [style, setStyle] = useState("photography");
   const [title, setTitle] = useState("");
   const [affirmation, setAffirmation] = useState("");
   const [gridSize, setGridSize] = useState<"small" | "medium" | "large">("medium");
@@ -820,6 +876,7 @@ function AddImageModal({ onClose, onAdd }: AddImageModalProps) {
         title: title.trim() || "Vision",
         affirmation: affirmation.trim(),
         gridSize,
+        style,
       });
     }
   };
@@ -827,6 +884,7 @@ function AddImageModal({ onClose, onAdd }: AddImageModalProps) {
   const useInspiration = (idea: typeof inspirationPrompts[0]) => {
     setPrompt(idea.prompt);
     setTitle(idea.title);
+    setStyle(idea.style);
   };
 
   return (
@@ -921,6 +979,27 @@ function AddImageModal({ onClose, onAdd }: AddImageModalProps) {
               placeholder="e.g., I am calm and centered"
               className="w-full p-3 rounded-xl bg-cream-dark/50 border border-sand/50 font-serif italic text-charcoal placeholder:text-slate/50 focus:outline-none focus:border-terracotta/50 transition-gentle"
             />
+          </div>
+
+          {/* Style */}
+          <div>
+            <label className="font-sans text-sm text-slate mb-2 block">Style</label>
+            <div className="grid grid-cols-4 gap-2">
+              {Object.entries(styleLabels).map(([key, label]) => (
+                <button
+                  key={key}
+                  onClick={() => setStyle(key)}
+                  className={cn(
+                    "py-1.5 px-2 rounded-lg border-2 font-sans text-xs transition-gentle",
+                    style === key 
+                      ? "border-terracotta bg-terracotta/10 text-charcoal" 
+                      : "border-sand/50 text-slate hover:border-sand"
+                  )}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
           </div>
 
           {/* Grid Size */}
