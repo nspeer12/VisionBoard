@@ -47,6 +47,11 @@ export interface ImageData {
   prompt?: string;
   isGenerated: boolean;
   style?: string;
+  title?: string;
+  affirmation?: string;
+  gridSize?: "small" | "medium" | "large";
+  status?: "pending" | "complete" | "error";
+  personalConnection?: string;
 }
 
 export interface TextData {

@@ -119,7 +119,7 @@ export default function BoardPage() {
               data: {
                 ...el.data,
                 src: imageUrl,
-                status: "complete",
+                status: "complete" as const,
               },
             };
           }
@@ -200,7 +200,7 @@ export default function BoardPage() {
         title: data.title,
         affirmation: data.affirmation,
         gridSize: data.gridSize,
-        status: "pending",
+        status: "pending" as const,
       },
     };
     
@@ -459,7 +459,7 @@ export default function BoardPage() {
               setEditingItem(null);
             }}
             onRegenerate={(newPrompt) => {
-              updateElement(editingItem.id, { prompt: newPrompt, status: "pending", src: "" });
+              updateElement(editingItem.id, { prompt: newPrompt, status: "pending" as const, src: "" });
               generateImage(editingItem.id, newPrompt);
               setEditingItem(null);
             }}
