@@ -15,6 +15,7 @@ import {
   Plus,
   Pencil,
   Trash2,
+  FileEdit,
 } from "lucide-react";
 import { 
   db, 
@@ -324,6 +325,18 @@ export default function BoardPage() {
         </div>
 
         <div className="flex items-center gap-2">
+            {/* Edit Vision Button - only show if board has an associated journal */}
+            {board?.journalId && (
+              <button
+                onClick={() => router.push(`/journal/${board.journalId}?edit=true&boardId=${board.id}`)}
+                className="flex items-center gap-2 px-3 py-2.5 rounded-xl hover:bg-cream-dark transition-gentle text-slate hover:text-charcoal font-sans text-sm"
+                title="Edit your vision prompt and regenerate"
+              >
+                <FileEdit className="w-4 h-4" />
+                <span className="hidden sm:inline">Edit Vision</span>
+              </button>
+            )}
+
             {/* Add Image Button */}
             <button
               onClick={() => setShowAddModal(true)}
