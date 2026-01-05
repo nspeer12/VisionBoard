@@ -186,3 +186,125 @@ body {
   border: 2px solid var(--color-terracotta);
   border-radius: 50%;
 }
+
+/* ============================================
+   COLLAGE GRID LAYOUT
+   Magazine-style masonry grid with varying sizes
+   ============================================ */
+
+.collage-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-auto-rows: 180px;
+  gap: 16px;
+  grid-auto-flow: dense;
+}
+
+/* Small items: 1x1 */
+.collage-item-small {
+  grid-column: span 1;
+  grid-row: span 1;
+}
+
+/* Medium items: 1x2 (tall) or 2x1 (wide) */
+.collage-item-medium {
+  grid-column: span 1;
+  grid-row: span 2;
+}
+
+/* Large items: 2x2 */
+.collage-item-large {
+  grid-column: span 2;
+  grid-row: span 2;
+}
+
+/* Alternate medium items between tall and wide for variety */
+.collage-item-medium:nth-of-type(4n) {
+  grid-column: span 2;
+  grid-row: span 1;
+}
+
+.collage-item-medium:nth-of-type(4n+1) {
+  grid-column: span 1;
+  grid-row: span 2;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1024px) {
+  .collage-grid {
+    grid-template-columns: repeat(3, 1fr);
+    grid-auto-rows: 160px;
+    gap: 12px;
+  }
+  
+  .collage-item-large {
+    grid-column: span 2;
+    grid-row: span 2;
+  }
+}
+
+@media (max-width: 768px) {
+  .collage-grid {
+    grid-template-columns: repeat(2, 1fr);
+    grid-auto-rows: 140px;
+    gap: 10px;
+  }
+  
+  .collage-item-small,
+  .collage-item-medium {
+    grid-column: span 1;
+    grid-row: span 1;
+  }
+  
+  .collage-item-large {
+    grid-column: span 2;
+    grid-row: span 2;
+  }
+  
+  .collage-item-medium:nth-of-type(4n),
+  .collage-item-medium:nth-of-type(4n+1) {
+    grid-column: span 1;
+    grid-row: span 1;
+  }
+}
+
+@media (max-width: 480px) {
+  .collage-grid {
+    grid-template-columns: 1fr;
+    grid-auto-rows: 200px;
+    gap: 12px;
+  }
+  
+  .collage-item-small,
+  .collage-item-medium,
+  .collage-item-large {
+    grid-column: span 1;
+    grid-row: span 1;
+  }
+  
+  .collage-item-large {
+    grid-row: span 2;
+  }
+}
+
+/* Collage item base styles */
+.collage-item {
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1),
+              box-shadow 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.collage-item:hover {
+  transform: translateY(-4px);
+  box-shadow: 
+    0 20px 40px rgba(0, 0, 0, 0.1),
+    0 8px 16px rgba(0, 0, 0, 0.06);
+}
+
+/* Image within collage items */
+.collage-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}

@@ -146,6 +146,24 @@ export async function createBoard(journalId: string, title: string): Promise<Boa
   return board;
 }
 
+export async function createBlankBoard(title: string): Promise<string> {
+  const board: Board = {
+    id: crypto.randomUUID(),
+    journalId: "", // No associated journal
+    title,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    canvas: {
+      background: { type: "color", value: "#FDF8F3" },
+      elements: [],
+      viewport: { x: 0, y: 0, zoom: 1 },
+    },
+    versions: [],
+  };
+  await db.boards.add(board);
+  return board.id;
+}
+
 export async function updateBoard(id: string, updates: Partial<Board>): Promise<void> {
   await db.boards.update(id, { ...updates, updatedAt: new Date() });
 }

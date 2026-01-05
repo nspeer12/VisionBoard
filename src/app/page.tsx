@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Sparkles, BookOpen, ArrowRight, LayoutGrid, Plus } from "lucide-react";
-import { db, Journal, createBoard } from "@/lib/storage/db";
+import { db, Journal, createBlankBoard as createBlankBoardDb } from "@/lib/storage/db";
 
 export default function Home() {
   const router = useRouter();
@@ -33,14 +33,8 @@ export default function Home() {
   };
 
   const createBlankBoard = async () => {
-    const boardId = await createBoard({
-      title: `Vision Board — ${new Date().toLocaleDateString("en-US", { month: "short", day: "numeric" })}`,
-      canvas: {
-        elements: [],
-        background: { type: "color", value: "#FDF8F3" },
-        viewport: { x: 0, y: 0, zoom: 1 },
-      },
-    });
+    const title = `Vision Board — ${new Date().toLocaleDateString("en-US", { month: "short", day: "numeric" })}`;
+    const boardId = await createBlankBoardDb(title);
     router.push(`/board/${boardId}`);
   };
 
