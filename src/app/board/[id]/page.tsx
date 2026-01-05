@@ -12,6 +12,9 @@ import {
   Loader2,
   X,
   RefreshCw,
+  Plus,
+  Pencil,
+  Trash2,
 } from "lucide-react";
 import { 
   db, 
@@ -49,6 +52,10 @@ export default function BoardPage() {
   const [showBackgroundPicker, setShowBackgroundPicker] = useState(false);
   const [generatingImages, setGeneratingImages] = useState<Set<string>>(new Set());
   const [isExporting, setIsExporting] = useState(false);
+  
+  // Edit modal state
+  const [editingItem, setEditingItem] = useState<CollageItem | null>(null);
+  const [showAddModal, setShowAddModal] = useState(false);
 
   const boardRef = useRef<Board | null>(null);
   useEffect(() => {
@@ -82,14 +89,6 @@ export default function BoardPage() {
     };
     load();
   }, [boardId, router]);
-
-  // Save board
-  const saveBoard = useCallback(async (elements: CanvasElement[]) => {
-    if (!board) return;
-    const newCanvas = { ...board.canvas, elements };
-    await updateBoard(board.id, { canvas: newCanvas });
-    setBoard({ ...board, canvas: newCanvas });
-  }, [board]);
 
   // Generate image
   const generateImage = async (elementId: string, prompt: string) => {
@@ -145,14 +144,74 @@ export default function BoardPage() {
     }
   };
 
-  // Regenerate single image
-  const regenerateImage = (elementId: string) => {
+  // Update element
+  const updateElement = useCallback(async (elementId: string, updates: Partial<CollageItem["data"]>) => {
     if (!board) return;
-    const element = board.canvas.elements.find(el => el.id === elementId);
-    if (element && element.type === "image") {
-      generateImage(elementId, (element.data as any).prompt);
-    }
-  };
+    
+    const elements = board.canvas.elements.map(el => {
+      if (el.id === elementId) {
+        return {
+          ...el,
+          data: { ...el.data, ...updates },
+        };
+      }
+      return el;
+    });
+    
+    const newCanvas = { ...board.canvas, elements };
+    await updateBoard(board.id, { canvas: newCanvas });
+    setBoard({ ...board, canvas: newCanvas });
+  }, [board]);
+
+  // Delete element
+  const deleteElement = useCallback(async (elementId: string) => {
+    if (!board) return;
+    
+    const elements = board.canvas.elements.filter(el => el.id !== elementId);
+    const newCanvas = { ...board.canvas, elements };
+    await updateBoard(board.id, { canvas: newCanvas });
+    setBoard({ ...board, canvas: newCanvas });
+    setEditingItem(null);
+  }, [board]);
+
+  // Add new element
+  const addElement = useCallback(async (data: {
+    prompt: string;
+    title: string;
+    affirmation: string;
+    gridSize: "small" | "medium" | "large";
+  }) => {
+    if (!board) return;
+    
+    const newElement: CanvasElement = {
+      id: crypto.randomUUID(),
+      type: "image",
+      position: { x: 0, y: 0 },
+      size: { width: 350, height: 280 },
+      rotation: 0,
+      layer: board.canvas.elements.length,
+      locked: false,
+      data: {
+        src: "",
+        prompt: data.prompt,
+        isGenerated: true,
+        style: "photorealistic",
+        title: data.title,
+        affirmation: data.affirmation,
+        gridSize: data.gridSize,
+        status: "pending",
+      },
+    };
+    
+    const elements = [...board.canvas.elements, newElement];
+    const newCanvas = { ...board.canvas, elements };
+    await updateBoard(board.id, { canvas: newCanvas });
+    setBoard({ ...board, canvas: newCanvas });
+    
+    // Start generating the image
+    generateImage(newElement.id, data.prompt);
+    setShowAddModal(false);
+  }, [board]);
 
   // Update background
   const updateBackground = useCallback((background: Background) => {
@@ -248,6 +307,15 @@ export default function BoardPage() {
           </div>
 
           <div className="flex items-center gap-2">
+            {/* Add Image Button */}
+            <button
+              onClick={() => setShowAddModal(true)}
+              className="flex items-center gap-2 px-3 py-2.5 rounded-xl hover:bg-cream-dark transition-gentle text-slate hover:text-charcoal font-sans text-sm"
+            >
+              <Plus className="w-4 h-4" />
+              <span className="hidden sm:inline">Add Image</span>
+            </button>
+
             <button
               onClick={() => setShowBackgroundPicker(!showBackgroundPicker)}
               className={cn(
@@ -339,19 +407,75 @@ export default function BoardPage() {
           ref={collageRef}
           className="max-w-6xl mx-auto"
         >
-          <div className="collage-grid">
-            {collageItems.map((item, index) => (
-              <CollageCard
-                key={item.id}
-                item={item}
-                index={index}
-                isGenerating={generatingImages.has(item.id)}
-                onRegenerate={() => regenerateImage(item.id)}
-              />
-            ))}
-          </div>
+          {collageItems.length === 0 ? (
+            // Empty state for blank boards
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="flex flex-col items-center justify-center py-20"
+            >
+              <div className="w-20 h-20 rounded-3xl bg-cream-dark flex items-center justify-center mb-6">
+                <Sparkles className="w-10 h-10 text-terracotta/50" />
+              </div>
+              <h2 className="font-display text-2xl text-charcoal mb-2">Your canvas awaits</h2>
+              <p className="font-serif text-slate mb-8 text-center max-w-md">
+                Click "Add Image" to start building your vision board with AI-generated imagery.
+              </p>
+              <button
+                onClick={() => setShowAddModal(true)}
+                className="flex items-center gap-2 px-6 py-3 rounded-xl bg-terracotta text-cream hover:bg-terracotta-dark transition-gentle font-sans"
+              >
+                <Plus className="w-5 h-5" />
+                Add Your First Image
+              </button>
+            </motion.div>
+          ) : (
+            <div className="collage-grid">
+              {collageItems.map((item, index) => (
+                <CollageCard
+                  key={item.id}
+                  item={item}
+                  index={index}
+                  isGenerating={generatingImages.has(item.id)}
+                  onEdit={() => setEditingItem(item)}
+                  onRegenerate={() => generateImage(item.id, item.data.prompt)}
+                />
+              ))}
+            </div>
+          )}
         </div>
       </main>
+
+      {/* Edit Modal */}
+      <AnimatePresence>
+        {editingItem && (
+          <EditImageModal
+            item={editingItem}
+            isGenerating={generatingImages.has(editingItem.id)}
+            onClose={() => setEditingItem(null)}
+            onSave={(updates) => {
+              updateElement(editingItem.id, updates);
+              setEditingItem(null);
+            }}
+            onRegenerate={(newPrompt) => {
+              updateElement(editingItem.id, { prompt: newPrompt, status: "pending", src: "" });
+              generateImage(editingItem.id, newPrompt);
+              setEditingItem(null);
+            }}
+            onDelete={() => deleteElement(editingItem.id)}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Add Image Modal */}
+      <AnimatePresence>
+        {showAddModal && (
+          <AddImageModal
+            onClose={() => setShowAddModal(false)}
+            onAdd={addElement}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }
@@ -360,15 +484,15 @@ interface CollageCardProps {
   item: CollageItem;
   index: number;
   isGenerating: boolean;
+  onEdit: () => void;
   onRegenerate: () => void;
 }
 
-function CollageCard({ item, index, isGenerating, onRegenerate }: CollageCardProps) {
+function CollageCard({ item, index, isGenerating, onEdit, onRegenerate }: CollageCardProps) {
   const [showOverlay, setShowOverlay] = useState(false);
   
   const gridSize = item.data.gridSize || "small";
   
-  // Map grid sizes to CSS classes
   const sizeClasses = {
     small: "collage-item-small",
     medium: "collage-item-medium", 
@@ -385,11 +509,12 @@ function CollageCard({ item, index, isGenerating, onRegenerate }: CollageCardPro
         ease: [0.23, 1, 0.32, 1]
       }}
       className={cn(
-        "collage-item group relative overflow-hidden rounded-2xl bg-cream-dark shadow-lg",
+        "collage-item group relative overflow-hidden rounded-2xl bg-cream-dark shadow-lg cursor-pointer",
         sizeClasses[gridSize]
       )}
       onMouseEnter={() => setShowOverlay(true)}
       onMouseLeave={() => setShowOverlay(false)}
+      onClick={onEdit}
     >
       {/* Image or Loading State */}
       {item.data.src && item.data.status === "complete" ? (
@@ -407,45 +532,433 @@ function CollageCard({ item, index, isGenerating, onRegenerate }: CollageCardPro
           </div>
           <p className="mt-4 font-serif text-sm text-slate">Generating...</p>
           <p className="mt-1 font-sans text-xs text-slate/60 max-w-[200px] text-center line-clamp-2">
-            {item.data.title}
+            {item.data.title || "Your vision"}
           </p>
         </div>
       ) : (
-        <div className="w-full h-full flex items-center justify-center bg-cream-dark">
-          <Sparkles className="w-12 h-12 text-sand" />
+        <div className="w-full h-full flex flex-col items-center justify-center bg-cream-dark">
+          <Sparkles className="w-12 h-12 text-sand mb-2" />
+          <p className="font-sans text-xs text-slate/60">Click to edit</p>
         </div>
       )}
 
-      {/* Overlay with affirmation */}
+      {/* Hover Overlay */}
       <AnimatePresence>
-        {(showOverlay && item.data.src) && (
+        {showOverlay && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="absolute inset-0 bg-gradient-to-t from-charcoal/80 via-charcoal/20 to-transparent flex flex-col justify-end p-4"
           >
-            <p className="font-display text-cream text-lg leading-tight mb-1">
-              {item.data.title}
-            </p>
-            <p className="font-serif text-cream/90 text-sm italic">
-              "{item.data.affirmation}"
-            </p>
+            {item.data.title && (
+              <p className="font-display text-cream text-lg leading-tight mb-1">
+                {item.data.title}
+              </p>
+            )}
+            {item.data.affirmation && (
+              <p className="font-serif text-cream/90 text-sm italic">
+                "{item.data.affirmation}"
+              </p>
+            )}
             
-            {/* Regenerate button */}
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                onRegenerate();
-              }}
-              disabled={isGenerating}
-              className="absolute top-3 right-3 p-2 rounded-xl bg-cream/20 backdrop-blur-sm text-cream hover:bg-cream/30 transition-gentle"
-            >
-              <RefreshCw className={cn("w-4 h-4", isGenerating && "animate-spin")} />
-            </button>
+            {/* Action buttons */}
+            <div className="absolute top-3 right-3 flex gap-2">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onEdit();
+                }}
+                className="p-2 rounded-xl bg-cream/20 backdrop-blur-sm text-cream hover:bg-cream/30 transition-gentle"
+                title="Edit"
+              >
+                <Pencil className="w-4 h-4" />
+              </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onRegenerate();
+                }}
+                disabled={isGenerating}
+                className="p-2 rounded-xl bg-cream/20 backdrop-blur-sm text-cream hover:bg-cream/30 transition-gentle"
+                title="Regenerate"
+              >
+                <RefreshCw className={cn("w-4 h-4", isGenerating && "animate-spin")} />
+              </button>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
+    </motion.div>
+  );
+}
+
+// Edit Image Modal
+interface EditImageModalProps {
+  item: CollageItem;
+  isGenerating: boolean;
+  onClose: () => void;
+  onSave: (updates: Partial<CollageItem["data"]>) => void;
+  onRegenerate: (prompt: string) => void;
+  onDelete: () => void;
+}
+
+function EditImageModal({ item, isGenerating, onClose, onSave, onRegenerate, onDelete }: EditImageModalProps) {
+  const [prompt, setPrompt] = useState(item.data.prompt || "");
+  const [title, setTitle] = useState(item.data.title || "");
+  const [affirmation, setAffirmation] = useState(item.data.affirmation || "");
+  const [gridSize, setGridSize] = useState<"small" | "medium" | "large">(item.data.gridSize || "medium");
+  
+  const hasChanges = prompt !== item.data.prompt || 
+                     title !== item.data.title || 
+                     affirmation !== item.data.affirmation ||
+                     gridSize !== item.data.gridSize;
+  
+  const handleSave = () => {
+    onSave({ title, affirmation, gridSize });
+  };
+
+  const handleRegenerate = () => {
+    if (prompt.trim()) {
+      onRegenerate(prompt.trim());
+    }
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      onClick={onClose}
+    >
+      <div className="absolute inset-0 bg-charcoal/40 backdrop-blur-sm" />
+      
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95, y: 20 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.95, y: 20 }}
+        transition={{ type: "spring", duration: 0.5 }}
+        onClick={(e) => e.stopPropagation()}
+        className="relative bg-cream rounded-3xl shadow-2xl border border-sand/50 w-full max-w-xl overflow-hidden"
+      >
+        {/* Header */}
+        <div className="px-6 pt-6 pb-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-terracotta to-terracotta-dark flex items-center justify-center">
+              <Pencil className="w-5 h-5 text-cream" />
+            </div>
+            <div>
+              <h2 className="font-display text-xl text-charcoal">Edit Image</h2>
+              <p className="font-sans text-sm text-slate">Customize your vision</p>
+            </div>
+          </div>
+          <button
+            onClick={onClose}
+            className="p-2 rounded-xl hover:bg-cream-dark text-slate hover:text-charcoal transition-gentle"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        {/* Preview */}
+        {item.data.src && (
+          <div className="mx-6 mb-4 rounded-2xl overflow-hidden aspect-video bg-cream-dark">
+            <img
+              src={item.data.src}
+              alt={item.data.title}
+              className="w-full h-full object-cover"
+            />
+          </div>
+        )}
+
+        {/* Form */}
+        <div className="px-6 pb-6 space-y-4">
+          {/* Prompt */}
+          <div>
+            <label className="font-sans text-sm text-slate mb-2 block">Image Prompt</label>
+            <textarea
+              value={prompt}
+              onChange={(e) => setPrompt(e.target.value)}
+              placeholder="Describe the image you want to generate..."
+              className="w-full p-3 rounded-xl bg-cream-dark/50 border border-sand/50 font-serif text-charcoal placeholder:text-slate/50 resize-none focus:outline-none focus:border-terracotta/50 transition-gentle"
+              rows={3}
+            />
+          </div>
+
+          {/* Title */}
+          <div>
+            <label className="font-sans text-sm text-slate mb-2 block">Title</label>
+            <input
+              type="text"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="e.g., Inner Peace"
+              className="w-full p-3 rounded-xl bg-cream-dark/50 border border-sand/50 font-sans text-charcoal placeholder:text-slate/50 focus:outline-none focus:border-terracotta/50 transition-gentle"
+            />
+          </div>
+
+          {/* Affirmation */}
+          <div>
+            <label className="font-sans text-sm text-slate mb-2 block">Affirmation</label>
+            <input
+              type="text"
+              value={affirmation}
+              onChange={(e) => setAffirmation(e.target.value)}
+              placeholder="e.g., I am calm and centered"
+              className="w-full p-3 rounded-xl bg-cream-dark/50 border border-sand/50 font-serif italic text-charcoal placeholder:text-slate/50 focus:outline-none focus:border-terracotta/50 transition-gentle"
+            />
+          </div>
+
+          {/* Grid Size */}
+          <div>
+            <label className="font-sans text-sm text-slate mb-2 block">Size in Grid</label>
+            <div className="flex gap-2">
+              {(["small", "medium", "large"] as const).map((size) => (
+                <button
+                  key={size}
+                  onClick={() => setGridSize(size)}
+                  className={cn(
+                    "flex-1 py-2 px-3 rounded-xl border-2 font-sans text-sm capitalize transition-gentle",
+                    gridSize === size 
+                      ? "border-terracotta bg-terracotta/10 text-charcoal" 
+                      : "border-sand/50 text-slate hover:border-sand"
+                  )}
+                >
+                  {size}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Actions */}
+          <div className="flex gap-3 pt-2">
+            <button
+              onClick={onDelete}
+              className="p-3 rounded-xl border border-rose/50 text-rose hover:bg-rose/10 transition-gentle"
+              title="Delete"
+            >
+              <Trash2 className="w-5 h-5" />
+            </button>
+            
+            <button
+              onClick={handleSave}
+              disabled={!hasChanges}
+              className={cn(
+                "flex-1 py-3 px-4 rounded-xl font-sans text-sm transition-gentle",
+                hasChanges 
+                  ? "bg-cream-dark text-charcoal hover:bg-sand/50"
+                  : "bg-sand/30 text-slate/50 cursor-not-allowed"
+              )}
+            >
+              Save Changes
+            </button>
+            
+            <button
+              onClick={handleRegenerate}
+              disabled={!prompt.trim() || isGenerating}
+              className={cn(
+                "flex-1 py-3 px-4 rounded-xl font-sans text-sm font-medium transition-gentle flex items-center justify-center gap-2",
+                prompt.trim() && !isGenerating
+                  ? "bg-gradient-to-r from-terracotta to-terracotta-dark text-cream hover:shadow-lg"
+                  : "bg-sand/50 text-slate/50 cursor-not-allowed"
+              )}
+            >
+              {isGenerating ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Generating...
+                </>
+              ) : (
+                <>
+                  <Sparkles className="w-4 h-4" />
+                  Regenerate
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+}
+
+// Add Image Modal
+interface AddImageModalProps {
+  onClose: () => void;
+  onAdd: (data: { prompt: string; title: string; affirmation: string; gridSize: "small" | "medium" | "large" }) => void;
+}
+
+const inspirationPrompts = [
+  { prompt: "A serene mountain lake at golden hour", title: "Serenity" },
+  { prompt: "A cozy reading nook with warm sunlight", title: "Comfort" },
+  { prompt: "A path through an ancient forest", title: "Journey" },
+  { prompt: "A peaceful garden with blooming flowers", title: "Growth" },
+  { prompt: "An open road leading to the horizon", title: "Freedom" },
+  { prompt: "A tranquil beach at sunrise", title: "Peace" },
+];
+
+function AddImageModal({ onClose, onAdd }: AddImageModalProps) {
+  const [prompt, setPrompt] = useState("");
+  const [title, setTitle] = useState("");
+  const [affirmation, setAffirmation] = useState("");
+  const [gridSize, setGridSize] = useState<"small" | "medium" | "large">("medium");
+
+  const handleSubmit = () => {
+    if (prompt.trim()) {
+      onAdd({
+        prompt: prompt.trim(),
+        title: title.trim() || "Vision",
+        affirmation: affirmation.trim(),
+        gridSize,
+      });
+    }
+  };
+
+  const useInspiration = (idea: typeof inspirationPrompts[0]) => {
+    setPrompt(idea.prompt);
+    setTitle(idea.title);
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      onClick={onClose}
+    >
+      <div className="absolute inset-0 bg-charcoal/40 backdrop-blur-sm" />
+      
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95, y: 20 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.95, y: 20 }}
+        transition={{ type: "spring", duration: 0.5 }}
+        onClick={(e) => e.stopPropagation()}
+        className="relative bg-cream rounded-3xl shadow-2xl border border-sand/50 w-full max-w-xl overflow-hidden"
+      >
+        {/* Header */}
+        <div className="px-6 pt-6 pb-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-terracotta to-terracotta-dark flex items-center justify-center">
+                <Sparkles className="w-5 h-5 text-cream" />
+              </div>
+              <div>
+                <h2 className="font-display text-xl text-charcoal">Add Image</h2>
+                <p className="font-sans text-sm text-slate">Describe your vision</p>
+              </div>
+            </div>
+            <button
+              onClick={onClose}
+              className="p-2 rounded-xl hover:bg-cream-dark text-slate hover:text-charcoal transition-gentle"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+        </div>
+
+        {/* Form */}
+        <div className="px-6 pb-6 space-y-4">
+          {/* Prompt */}
+          <div>
+            <label className="font-sans text-sm text-slate mb-2 block">What do you want to visualize?</label>
+            <textarea
+              value={prompt}
+              onChange={(e) => setPrompt(e.target.value)}
+              placeholder="A peaceful sunrise over calm ocean waves..."
+              className="w-full p-4 rounded-2xl bg-cream-dark/50 border border-sand/50 font-serif text-charcoal placeholder:text-slate/50 resize-none focus:outline-none focus:border-terracotta/50 transition-gentle"
+              rows={3}
+              autoFocus
+            />
+          </div>
+
+          {/* Inspiration chips */}
+          <div>
+            <label className="font-sans text-xs text-slate mb-2 block">Need inspiration?</label>
+            <div className="flex flex-wrap gap-2">
+              {inspirationPrompts.map((idea) => (
+                <button
+                  key={idea.prompt}
+                  onClick={() => useInspiration(idea)}
+                  className="px-3 py-1.5 rounded-full bg-cream-dark/50 border border-sand/50 font-sans text-xs text-slate hover:bg-cream-dark hover:border-terracotta/30 transition-gentle"
+                >
+                  {idea.title}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Title */}
+          <div>
+            <label className="font-sans text-sm text-slate mb-2 block">Title (optional)</label>
+            <input
+              type="text"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="e.g., Inner Peace"
+              className="w-full p-3 rounded-xl bg-cream-dark/50 border border-sand/50 font-sans text-charcoal placeholder:text-slate/50 focus:outline-none focus:border-terracotta/50 transition-gentle"
+            />
+          </div>
+
+          {/* Affirmation */}
+          <div>
+            <label className="font-sans text-sm text-slate mb-2 block">Affirmation (optional)</label>
+            <input
+              type="text"
+              value={affirmation}
+              onChange={(e) => setAffirmation(e.target.value)}
+              placeholder="e.g., I am calm and centered"
+              className="w-full p-3 rounded-xl bg-cream-dark/50 border border-sand/50 font-serif italic text-charcoal placeholder:text-slate/50 focus:outline-none focus:border-terracotta/50 transition-gentle"
+            />
+          </div>
+
+          {/* Grid Size */}
+          <div>
+            <label className="font-sans text-sm text-slate mb-2 block">Size in Grid</label>
+            <div className="flex gap-2">
+              {(["small", "medium", "large"] as const).map((size) => (
+                <button
+                  key={size}
+                  onClick={() => setGridSize(size)}
+                  className={cn(
+                    "flex-1 py-2 px-3 rounded-xl border-2 font-sans text-sm capitalize transition-gentle",
+                    gridSize === size 
+                      ? "border-terracotta bg-terracotta/10 text-charcoal" 
+                      : "border-sand/50 text-slate hover:border-sand"
+                  )}
+                >
+                  {size}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Actions */}
+          <div className="flex gap-3 pt-2">
+            <button
+              onClick={onClose}
+              className="flex-1 px-4 py-3 rounded-xl border border-sand font-sans text-sm text-slate hover:bg-cream-dark transition-gentle"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleSubmit}
+              disabled={!prompt.trim()}
+              className={cn(
+                "flex-1 px-4 py-3 rounded-xl font-sans text-sm font-medium transition-gentle flex items-center justify-center gap-2",
+                prompt.trim()
+                  ? "bg-gradient-to-r from-terracotta to-terracotta-dark text-cream hover:shadow-lg"
+                  : "bg-sand/50 text-slate/50 cursor-not-allowed"
+              )}
+            >
+              <Sparkles className="w-4 h-4" />
+              Generate
+            </button>
+          </div>
+        </div>
+      </motion.div>
     </motion.div>
   );
 }
