@@ -3,7 +3,7 @@
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, ArrowRight, Loader2, SkipForward, ChevronLeft, ChevronRight } from "lucide-react";
+import { ArrowRight, Loader2, ChevronLeft, ChevronRight } from "lucide-react";
 import { 
   db, 
   Journal, 
@@ -42,7 +42,6 @@ export default function JournalPage() {
         return;
       }
       setJournal(j);
-      // Start at beginning, user can navigate freely
       setCurrentIndex(0);
       setIsLoading(false);
     };
@@ -66,7 +65,6 @@ export default function JournalPage() {
   const saveResponse = useCallback(async (skipIfEmpty = false) => {
     if (!journal || !currentPrompt) return;
     
-    // Skip saving if answer is empty and we're not forcing save
     if (skipIfEmpty && !answer.trim()) return;
     
     const newResponse: JournalResponse = {
@@ -83,10 +81,9 @@ export default function JournalPage() {
       newResponses = [...journal.responses];
       newResponses[existingIndex] = newResponse;
     } else if (answer.trim()) {
-      // Only add new response if there's actual content
       newResponses = [...journal.responses, newResponse];
     } else {
-      return; // Don't save empty new responses
+      return;
     }
 
     await updateJournal(journal.id, { responses: newResponses });
@@ -94,9 +91,8 @@ export default function JournalPage() {
   }, [journal, currentPrompt, answer]);
 
   const goToPrompt = async (index: number) => {
-    if (index === currentIndex) return;
+    if (index === currentIndex || index < 0 || index >= journalPrompts.length) return;
     
-    // Save current answer before navigating
     if (currentPrompt?.category !== "welcome") {
       await saveResponse(true);
     }
@@ -108,7 +104,6 @@ export default function JournalPage() {
     if (isSaving) return;
     setIsSaving(true);
 
-    // Save current answer
     if (currentPrompt?.category !== "welcome") {
       await saveResponse(true);
     }
@@ -123,7 +118,6 @@ export default function JournalPage() {
 
   const handleBack = async () => {
     if (currentIndex > 0) {
-      // Save current answer before going back
       if (currentPrompt?.category !== "welcome") {
         await saveResponse(true);
       }
@@ -131,33 +125,20 @@ export default function JournalPage() {
     }
   };
 
-  const handleSkipToEnd = async () => {
-    // Save current answer
-    if (currentPrompt?.category !== "welcome") {
-      await saveResponse(true);
-    }
-    // Go to the last prompt (freeform)
-    setCurrentIndex(journalPrompts.length - 1);
-  };
-
   const handleComplete = async () => {
     if (!journal) return;
     setIsGenerating(true);
 
     try {
-      // Save final answer
       await saveResponse(true);
       
-      // Refresh journal to get all responses
       const updatedJournal = await db.journals.get(journalId);
       if (!updatedJournal) throw new Error("Journal not found");
 
-      // Mark journal complete and create board
       await updateJournal(journal.id, { isComplete: true });
       const board = await createBoard(journal.id, journal.title);
       await updateJournal(journal.id, { boardId: board.id });
 
-      // Generate initial board content
       const response = await fetch("/api/generate-board", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -188,7 +169,6 @@ export default function JournalPage() {
     return promptCategories.find(c => c.id === currentPrompt?.category);
   };
 
-  // Check if a prompt has been answered
   const isPromptAnswered = (promptId: string) => {
     return journal?.responses.some(r => r.promptId === promptId && r.answer.trim().length > 0) || false;
   };
@@ -236,49 +216,17 @@ export default function JournalPage() {
         />
       </div>
 
-      {/* Header with category and skip */}
-      <div className="fixed top-6 left-0 right-0 z-40 px-6">
-        <div className="max-w-2xl mx-auto flex items-center justify-between">
-          {/* Back button */}
-          <button
-            onClick={handleBack}
-            disabled={isFirstPrompt}
-            className={cn(
-              "p-3 rounded-full bg-cream/80 backdrop-blur-sm border border-sand/50 transition-gentle",
-              isFirstPrompt 
-                ? "opacity-0 pointer-events-none" 
-                : "text-slate hover:text-charcoal hover:bg-cream"
-            )}
-          >
-            <ChevronLeft className="w-5 h-5" />
-          </button>
-
-          {/* Category indicator */}
-          <motion.div 
-            key={currentPrompt?.category}
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="flex items-center gap-2 px-4 py-2 rounded-full bg-cream/80 backdrop-blur-sm border border-sand/50"
-          >
-            <span>{getCurrentCategory()?.icon}</span>
-            <span className="font-sans text-sm text-slate">{getCurrentCategory()?.label}</span>
-            <span className="font-sans text-xs text-slate/50">
-              {currentIndex + 1}/{journalPrompts.length}
-            </span>
-          </motion.div>
-
-          {/* Skip to end button */}
-          {!isLastPrompt && (
-            <button
-              onClick={handleSkipToEnd}
-              className="p-3 rounded-full bg-cream/80 backdrop-blur-sm border border-sand/50 text-slate hover:text-charcoal hover:bg-cream transition-gentle"
-              title="Skip to end"
-            >
-              <SkipForward className="w-5 h-5" />
-            </button>
-          )}
-          {isLastPrompt && <div className="w-11" />}
-        </div>
+      {/* Category indicator - top center */}
+      <div className="fixed top-6 left-1/2 -translate-x-1/2 z-40">
+        <motion.div 
+          key={currentPrompt?.category}
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex items-center gap-2 px-4 py-2 rounded-full bg-cream/80 backdrop-blur-sm border border-sand/50"
+        >
+          <span>{getCurrentCategory()?.icon}</span>
+          <span className="font-sans text-sm text-slate">{getCurrentCategory()?.label}</span>
+        </motion.div>
       </div>
 
       {/* Main content */}
@@ -297,8 +245,6 @@ export default function JournalPage() {
                 answer={answer}
                 onAnswerChange={setAnswer}
                 onNext={handleNext}
-                onBack={handleBack}
-                isFirst={isFirstPrompt}
                 isLast={isLastPrompt}
                 isSaving={isSaving}
                 answeredCount={answeredCount}
@@ -308,27 +254,66 @@ export default function JournalPage() {
         </div>
       </div>
 
-      {/* Navigation dots - clickable */}
-      <div className="fixed bottom-8 left-1/2 -translate-x-1/2">
-        <div className="flex items-center gap-1">
-          {promptCategories.map((cat) => {
-            const catPrompts = journalPrompts.filter(p => p.category === cat.id);
-            const firstIndex = journalPrompts.findIndex(p => p.category === cat.id);
-            const isActive = currentPrompt?.category === cat.id;
-            const hasAnswers = catPrompts.some(p => isPromptAnswered(p.id));
-            
-            return (
-              <button
-                key={cat.id}
-                onClick={() => goToPrompt(firstIndex)}
-                className={cn(
-                  "h-2 rounded-full transition-all duration-300 hover:opacity-80",
-                  isActive ? "w-6 bg-terracotta" : hasAnswers ? "w-2 bg-sage" : "w-2 bg-sand"
-                )}
-                title={cat.label}
-              />
-            );
-          })}
+      {/* Bottom navigation - unified bar */}
+      <div className="fixed bottom-0 left-0 right-0 z-40 pb-6 pt-4 bg-gradient-to-t from-cream/80 to-transparent">
+        <div className="flex items-center justify-center gap-4">
+          {/* Back button */}
+          <button
+            onClick={handleBack}
+            disabled={isFirstPrompt}
+            className={cn(
+              "p-3 rounded-full bg-cream/90 backdrop-blur-sm border border-sand/50 transition-all duration-300",
+              isFirstPrompt 
+                ? "opacity-0 pointer-events-none scale-90" 
+                : "text-slate hover:text-charcoal hover:bg-cream hover:scale-105 shadow-sm"
+            )}
+          >
+            <ChevronLeft className="w-5 h-5" />
+          </button>
+
+          {/* Progress dots */}
+          <div className="flex items-center gap-1.5 px-4 py-2.5 rounded-full bg-cream/90 backdrop-blur-sm border border-sand/50 shadow-sm">
+            {promptCategories.map((cat) => {
+              const catPrompts = journalPrompts.filter(p => p.category === cat.id);
+              const firstIndex = journalPrompts.findIndex(p => p.category === cat.id);
+              const isActive = currentPrompt?.category === cat.id;
+              const hasAnswers = catPrompts.some(p => isPromptAnswered(p.id));
+              
+              return (
+                <button
+                  key={cat.id}
+                  onClick={() => goToPrompt(firstIndex)}
+                  className={cn(
+                    "rounded-full transition-all duration-300",
+                    isActive 
+                      ? "w-8 h-2.5 bg-terracotta" 
+                      : hasAnswers 
+                        ? "w-2.5 h-2.5 bg-sage hover:scale-125" 
+                        : "w-2.5 h-2.5 bg-sand/70 hover:bg-sand hover:scale-125"
+                  )}
+                  title={cat.label}
+                />
+              );
+            })}
+          </div>
+
+          {/* Forward button */}
+          <button
+            onClick={handleNext}
+            disabled={isSaving}
+            className={cn(
+              "p-3 rounded-full bg-cream/90 backdrop-blur-sm border border-sand/50 transition-all duration-300",
+              isSaving
+                ? "opacity-50 cursor-not-allowed"
+                : "text-slate hover:text-charcoal hover:bg-cream hover:scale-105 shadow-sm"
+            )}
+          >
+            {isSaving ? (
+              <Loader2 className="w-5 h-5 animate-spin" />
+            ) : (
+              <ChevronRight className="w-5 h-5" />
+            )}
+          </button>
         </div>
       </div>
     </div>
@@ -340,8 +325,6 @@ interface PromptCardProps {
   answer: string;
   onAnswerChange: (value: string) => void;
   onNext: () => void;
-  onBack: () => void;
-  isFirst: boolean;
   isLast: boolean;
   isSaving: boolean;
   answeredCount: number;
@@ -352,8 +335,6 @@ function PromptCard({
   answer, 
   onAnswerChange, 
   onNext, 
-  onBack,
-  isFirst,
   isLast,
   isSaving,
   answeredCount,
@@ -397,57 +378,36 @@ function PromptCard({
           />
           {isFreeform && (
             <p className="font-sans text-xs text-slate/60 mt-2">
-              This is your space for free reflection. Write as much or as little as you'd like.
+              Write as much or as little as you'd like.
             </p>
           )}
         </div>
       )}
 
-      {/* Action buttons */}
-      <div className="flex flex-col gap-3">
-        {/* Main action button */}
-        <motion.button
-          onClick={onNext}
-          disabled={isSaving}
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-          className="w-full flex items-center justify-center gap-3 px-8 py-4 rounded-2xl font-sans font-medium transition-gentle bg-gradient-to-r from-terracotta to-terracotta-dark text-cream hover:shadow-lg"
-        >
-          {isSaving ? (
-            <Loader2 className="w-5 h-5 animate-spin" />
-          ) : (
-            <>
-              <span>
-                {isLast 
-                  ? `Create My Vision Board${answeredCount > 0 ? ` (${answeredCount} reflections)` : ''}`
-                  : isWelcome 
-                    ? "I'm Ready" 
-                    : answer.trim() ? "Continue" : "Skip This One"
-                }
-              </span>
-              <ArrowRight className="w-5 h-5" />
-            </>
-          )}
-        </motion.button>
-
-        {/* Back button for mobile */}
-        {!isFirst && (
-          <button
-            onClick={onBack}
-            className="w-full flex items-center justify-center gap-2 px-8 py-3 rounded-2xl font-sans text-sm text-slate hover:text-charcoal hover:bg-cream-dark/30 transition-gentle md:hidden"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            <span>Previous Question</span>
-          </button>
+      {/* Main action button */}
+      <motion.button
+        onClick={onNext}
+        disabled={isSaving}
+        whileHover={{ scale: 1.02 }}
+        whileTap={{ scale: 0.98 }}
+        className="w-full flex items-center justify-center gap-3 px-8 py-4 rounded-2xl font-sans font-medium transition-gentle bg-gradient-to-r from-terracotta to-terracotta-dark text-cream hover:shadow-lg"
+      >
+        {isSaving ? (
+          <Loader2 className="w-5 h-5 animate-spin" />
+        ) : (
+          <>
+            <span>
+              {isLast 
+                ? `Create My Vision Board${answeredCount > 0 ? ` (${answeredCount})` : ''}`
+                : isWelcome 
+                  ? "I'm Ready" 
+                  : "Continue"
+              }
+            </span>
+            <ArrowRight className="w-5 h-5" />
+          </>
         )}
-      </div>
-
-      {/* Optional indicator */}
-      {prompt.isOptional && !isWelcome && (
-        <p className="font-sans text-xs text-center text-slate/50 mt-4">
-          All questions are optional — answer what resonates with you
-        </p>
-      )}
+      </motion.button>
     </div>
   );
 }
