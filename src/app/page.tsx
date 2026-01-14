@@ -2,37 +2,46 @@
 
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Sparkles, BookOpen, ArrowRight, LayoutGrid, Plus } from "lucide-react";
-import { db, Journal, createBlankBoard as createBlankBoardDb } from "@/lib/storage/db";
+import { db, Journal, createJournal, createBlankBoard as createBlankBoardDb } from "@/lib/storage/db";
 
 export default function Home() {
   const router = useRouter();
   const [journals, setJournals] = useState<Journal[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [hasExistingWork, setHasExistingWork] = useState(false);
+  const [hasExistingWork, setHasExistingWork] = useState<boolean | null>(null);
+  const hasStartedNewJournal = useRef(false);
 
   useEffect(() => {
-    const loadJournals = async () => {
+    const init = async () => {
       const allJournals = await db.journals.orderBy("updatedAt").reverse().toArray();
       const allBoards = await db.boards.toArray();
       
-      // Check if user has any existing work
       const hasWork = allJournals.length > 0 || allBoards.length > 0;
-      setHasExistingWork(hasWork);
-      setJournals(allJournals);
-      setIsLoading(false);
       
-      // Auto-redirect new users to start the questionnaire
-      if (!hasWork) {
-        router.push("/journal/new");
+      if (!hasWork && !hasStartedNewJournal.current) {
+        // New user - create journal immediately and redirect
+        hasStartedNewJournal.current = true;
+        const date = new Date();
+        const title = `New Journal — ${date.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}`;
+        const journal = await createJournal(title);
+        router.replace(`/journal/${journal.id}`);
+        return;
       }
+      
+      setJournals(allJournals);
+      setHasExistingWork(hasWork);
+      setIsLoading(false);
     };
-    loadJournals();
+    init();
   }, [router]);
 
-  const startNewJournal = () => {
-    router.push("/journal/new");
+  const startNewJournal = async () => {
+    const date = new Date();
+    const title = `New Journal — ${date.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}`;
+    const journal = await createJournal(title);
+    router.push(`/journal/${journal.id}`);
   };
 
   const continueJournal = (id: string) => {
@@ -49,16 +58,9 @@ export default function Home() {
     router.push(`/board/${boardId}`);
   };
 
-  // Show loading while checking for existing work
-  if (isLoading || !hasExistingWork) {
-    return (
-      <main className="min-h-screen bg-gradient-warm flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-10 h-10 border-2 border-terracotta border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <p className="font-serif text-slate">Preparing your journey...</p>
-        </div>
-      </main>
-    );
+  // Show nothing while redirecting new users (prevents flash)
+  if (isLoading || hasExistingWork === null || !hasExistingWork) {
+    return null;
   }
 
   // Dashboard for returning users with existing work
@@ -104,10 +106,10 @@ export default function Home() {
               <Sparkles className="w-6 h-6 sm:w-7 sm:h-7 text-cream" />
             </div>
             <h2 className="font-display text-xl sm:text-2xl text-charcoal mb-2 sm:mb-3">
-              New Excavation
+              New Journal
             </h2>
             <p className="font-serif text-sm sm:text-base text-slate mb-4 sm:mb-6">
-              Start fresh with a new deep dive into your psyche and vision.
+              Start fresh with a new guided reflection and vision board.
             </p>
             <div className="flex items-center gap-2 text-terracotta-dark font-sans text-sm font-medium group-hover:gap-3 transition-all">
               <span>Start Protocol</span>
