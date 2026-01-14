@@ -10,15 +10,26 @@ export default function Home() {
   const router = useRouter();
   const [journals, setJournals] = useState<Journal[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [hasExistingWork, setHasExistingWork] = useState(false);
 
   useEffect(() => {
     const loadJournals = async () => {
       const allJournals = await db.journals.orderBy("updatedAt").reverse().toArray();
+      const allBoards = await db.boards.toArray();
+      
+      // Check if user has any existing work
+      const hasWork = allJournals.length > 0 || allBoards.length > 0;
+      setHasExistingWork(hasWork);
       setJournals(allJournals);
       setIsLoading(false);
+      
+      // Auto-redirect new users to start the questionnaire
+      if (!hasWork) {
+        router.push("/journal/new");
+      }
     };
     loadJournals();
-  }, []);
+  }, [router]);
 
   const startNewJournal = () => {
     router.push("/journal/new");
@@ -38,6 +49,19 @@ export default function Home() {
     router.push(`/board/${boardId}`);
   };
 
+  // Show loading while checking for existing work
+  if (isLoading || !hasExistingWork) {
+    return (
+      <main className="min-h-screen bg-gradient-warm flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-10 h-10 border-2 border-terracotta border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <p className="font-serif text-slate">Preparing your journey...</p>
+        </div>
+      </main>
+    );
+  }
+
+  // Dashboard for returning users with existing work
   return (
     <main className="min-h-screen bg-gradient-warm">
       {/* Decorative background */}
@@ -52,30 +76,13 @@ export default function Home() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, ease: [0.4, 0, 0.2, 1] }}
-          className="text-center mb-12 sm:mb-20"
+          className="text-center mb-12 sm:mb-16"
         >
-          <motion.div
-            initial={{ scale: 0.9, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ delay: 0.2, duration: 0.6 }}
-            className="inline-flex items-center gap-2 px-3 sm:px-4 py-2 rounded-full bg-cream-dark/60 text-terracotta-dark text-xs sm:text-sm font-sans mb-6 sm:mb-8"
-          >
-            <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-            <span>The Transformation Protocol</span>
-          </motion.div>
-
-          <h1 className="font-display text-4xl sm:text-5xl md:text-7xl font-medium text-charcoal mb-4 sm:mb-6 leading-tight">
-            Excavate.
-            <br />
-            <span className="text-gradient">Transform.</span>
-            <br />
-            Become.
+          <h1 className="font-display text-3xl sm:text-4xl md:text-5xl font-medium text-charcoal mb-4 leading-tight">
+            Welcome Back
           </h1>
-
-          <p className="font-serif text-lg sm:text-xl text-slate max-w-xl mx-auto leading-relaxed px-2">
-            A deep psychological excavation to uncover your hidden patterns, 
-            confront uncomfortable truths, and build a vision so clear that 
-            distractions lose their power.
+          <p className="font-serif text-lg sm:text-xl text-slate max-w-xl mx-auto leading-relaxed">
+            Continue your transformation or start a new journey.
           </p>
         </motion.div>
 
@@ -83,7 +90,7 @@ export default function Home() {
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4, duration: 0.8 }}
+          transition={{ delay: 0.2, duration: 0.8 }}
           className="grid sm:grid-cols-2 gap-4 sm:gap-6 mb-6 sm:mb-8"
         >
           {/* Start New Journey */}
@@ -97,11 +104,10 @@ export default function Home() {
               <Sparkles className="w-6 h-6 sm:w-7 sm:h-7 text-cream" />
             </div>
             <h2 className="font-display text-xl sm:text-2xl text-charcoal mb-2 sm:mb-3">
-              Begin Excavation
+              New Excavation
             </h2>
             <p className="font-serif text-sm sm:text-base text-slate mb-4 sm:mb-6">
-              A deep dive into your psyche. Uncover hidden patterns, 
-              confront your anti-vision, and build an unshakeable vision.
+              Start fresh with a new deep dive into your psyche and vision.
             </p>
             <div className="flex items-center gap-2 text-terracotta-dark font-sans text-sm font-medium group-hover:gap-3 transition-all">
               <span>Start Protocol</span>
@@ -123,8 +129,7 @@ export default function Home() {
               Blank Canvas
             </h2>
             <p className="font-serif text-sm sm:text-base text-slate mb-4 sm:mb-6">
-              Skip the guided reflection and dive straight into 
-              creating your vision board from scratch.
+              Create a vision board from scratch without the guided process.
             </p>
             <div className="flex items-center gap-2 text-lavender-dark font-sans text-sm font-medium group-hover:gap-3 transition-all">
               <Plus className="w-4 h-4" />
@@ -133,16 +138,14 @@ export default function Home() {
           </motion.button>
         </motion.div>
 
-        {/* Continue / Previous Work */}
+        {/* Previous Work */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5, duration: 0.8 }}
-          className="mb-12 sm:mb-16"
+          transition={{ delay: 0.3, duration: 0.8 }}
         >
           <motion.div
-            whileHover={{ scale: 1.01 }}
-            className="prompt-card p-5 sm:p-8 transition-gentle hover:shadow-xl"
+            className="prompt-card p-5 sm:p-8 transition-gentle"
           >
             <div className="flex flex-col sm:flex-row sm:items-start gap-4 sm:gap-6">
               <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-gradient-to-br from-sage to-sage-dark flex items-center justify-center shrink-0">
@@ -150,55 +153,32 @@ export default function Home() {
               </div>
               <div className="flex-1 min-w-0">
                 <h2 className="font-display text-xl sm:text-2xl text-charcoal mb-2 sm:mb-3">
-                  Continue the Work
+                  Your Work
                 </h2>
                 <p className="font-serif text-sm sm:text-base text-slate mb-4 sm:mb-6">
-                  Pick up where you left off or revisit a previous 
-                  excavation to deepen your transformation.
+                  Continue where you left off or revisit a previous excavation.
                 </p>
                 
-                {isLoading ? (
-                  <div className="h-12 bg-cream-dark/50 rounded-xl animate-pulse" />
-                ) : journals.length > 0 ? (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3">
-                    {journals.slice(0, 6).map((journal) => (
-                      <button
-                        key={journal.id}
-                        onClick={() => journal.boardId ? openBoard(journal.boardId) : continueJournal(journal.id)}
-                        className="flex items-center justify-between p-3 rounded-xl bg-cream-dark/50 hover:bg-cream-dark transition-gentle text-left group"
-                      >
-                        <div className="min-w-0 flex-1">
-                          <p className="font-serif text-charcoal text-sm truncate">{journal.title}</p>
-                          <p className="font-sans text-xs text-slate">
-                            {journal.boardId ? "View Board" : `${journal.responses.length} responses`}
-                          </p>
-                        </div>
-                        <ArrowRight className="w-4 h-4 text-slate group-hover:text-terracotta transition-gentle shrink-0 ml-2" />
-                      </button>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="font-sans text-sm text-slate/60 italic">
-                    No journals yet. Start your first journey above.
-                  </p>
-                )}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3">
+                  {journals.slice(0, 6).map((journal) => (
+                    <button
+                      key={journal.id}
+                      onClick={() => journal.boardId ? openBoard(journal.boardId) : continueJournal(journal.id)}
+                      className="flex items-center justify-between p-3 rounded-xl bg-cream-dark/50 hover:bg-cream-dark transition-gentle text-left group"
+                    >
+                      <div className="min-w-0 flex-1">
+                        <p className="font-serif text-charcoal text-sm truncate">{journal.title}</p>
+                        <p className="font-sans text-xs text-slate">
+                          {journal.boardId ? "View Board" : `${journal.responses.length} responses`}
+                        </p>
+                      </div>
+                      <ArrowRight className="w-4 h-4 text-slate group-hover:text-terracotta transition-gentle shrink-0 ml-2" />
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
           </motion.div>
-        </motion.div>
-
-        {/* Philosophy */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.8, duration: 1 }}
-          className="text-center px-2"
-        >
-          <p className="font-serif text-base sm:text-lg text-slate/80 max-w-2xl mx-auto italic">
-            "If you want a specific outcome in life, you must have the lifestyle 
-            that creates that outcome long before you reach it."
-          </p>
-          <p className="font-sans text-xs sm:text-sm text-slate/60 mt-2">— Dan Koe</p>
         </motion.div>
       </div>
     </main>
