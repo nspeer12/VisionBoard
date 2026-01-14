@@ -23,7 +23,7 @@ import {
 } from "@/lib/storage/db";
 import { 
   prescribedPrompts,
-  promptCategories, 
+  promptCategories,
   getProgress,
   getAnsweredCount,
   createDynamicPrompt,
@@ -31,6 +31,15 @@ import {
   QUESTION_BATCH_SIZE,
   type JournalPrompt,
 } from "@/lib/journal/prompts";
+
+const phaseColors: Record<string, string> = {
+  "intro": "from-charcoal to-slate-800",
+  "excavation": "from-slate-600 to-slate-800",
+  "anti-vision": "from-red-900 to-red-950",
+  "vision": "from-emerald-700 to-emerald-900",
+  "synthesis": "from-indigo-700 to-indigo-900",
+  "game-plan": "from-amber-600 to-amber-800",
+};
 import { cn } from "@/lib/utils";
 
 type JournalPhase = "prescribed" | "transition" | "generating" | "dynamic" | "complete";
@@ -199,7 +208,7 @@ function JournalPageContent() {
         return data.questions.map((q: any) => createDynamicPrompt(
           q.question,
           q.subtext || "",
-          q.category || "dynamic",
+          q.phase || "synthesis",
           q.psychologyTechnique
         ));
       }
@@ -217,8 +226,8 @@ function JournalPageContent() {
     setIsSaving(true);
 
     try {
-      // Save current response
-      if (currentPrompt?.category !== "welcome" && answerRef.current.trim()) {
+      // Save current response (skip for interludes)
+      if (!currentPrompt?.isInterlude && answerRef.current.trim()) {
         await saveResponse(false);
       }
 
@@ -255,7 +264,7 @@ function JournalPageContent() {
 
   const handleBack = async () => {
     if (currentIndex > 0) {
-      if (currentPrompt?.category !== "welcome") {
+      if (!currentPrompt?.isInterlude) {
         await saveResponse(true);
       }
       // If we're in transition and go back, return to questions
@@ -302,7 +311,7 @@ function JournalPageContent() {
           responses: updatedJournal.responses.map(r => ({
             question: r.question,
             answer: r.answer,
-            category: prompts.find(p => p.id === r.promptId)?.category,
+            phase: prompts.find(p => p.id === r.promptId)?.phase,
           })),
         }),
       });
@@ -377,7 +386,7 @@ function JournalPageContent() {
           responses: updatedJournal.responses.map(r => ({
             question: r.question,
             answer: r.answer,
-            category: prompts.find(p => p.id === r.promptId)?.category,
+            phase: prompts.find(p => p.id === r.promptId)?.phase,
           })),
         }),
       });
@@ -421,7 +430,7 @@ function JournalPageContent() {
   const goToPrompt = async (index: number) => {
     if (index === currentIndex || index < 0 || index >= prompts.length) return;
     
-    if (currentPrompt?.category !== "welcome") {
+    if (!currentPrompt?.isInterlude) {
       await saveResponse(true);
     }
     
@@ -433,8 +442,12 @@ function JournalPageContent() {
     setCurrentIndex(index);
   };
 
-  const getCurrentCategory = () => {
-    return promptCategories.find(c => c.id === currentPrompt?.category);
+  const getCurrentPhase = () => {
+    return promptCategories.find(c => c.id === currentPrompt?.phase);
+  };
+
+  const getCurrentPhaseColor = () => {
+    return phaseColors[currentPrompt?.phase || "excavation"] || phaseColors["excavation"];
   };
 
   const isPromptAnswered = (promptId: string) => {
@@ -493,44 +506,48 @@ function JournalPageContent() {
             
             <h2 className="font-display text-2xl md:text-3xl text-charcoal mb-3">
               {batchNumber === 0 
-                ? "Great Foundation!" 
-                : `${QUESTION_BATCH_SIZE} More Reflections Complete!`}
+                ? "Deep Work Complete" 
+                : batchNumber === 1
+                  ? "Going Deeper"
+                  : "Excavation Continues"}
             </h2>
             
-            <p className="font-serif text-slate mb-6">
-              You've answered {answeredCount} question{answeredCount !== 1 ? 's' : ''}. 
+            <p className="font-serif text-slate mb-2">
+              You've confronted {answeredCount} truth{answeredCount !== 1 ? 's' : ''} so far.
+            </p>
+            <p className="font-sans text-sm text-slate/70 mb-6">
               {batchNumber === 0 
-                ? " You can create your vision board now, or continue exploring your vision with personalized questions."
-                : " Ready to create your board, or want to go deeper?"}
+                ? "You've completed the core excavation. Create your vision board to visualize your transformation, or continue to uncover more."
+                : "The AI is building on everything you've revealed. Continue to go even deeper, or create your board with your current insights."}
             </p>
 
             {phase === "generating" ? (
-              <div className="flex items-center justify-center gap-3 py-4">
-                <Loader2 className="w-5 h-5 animate-spin text-terracotta" />
-                <span className="font-sans text-slate">Generating personalized questions...</span>
+              <div className="flex flex-col items-center gap-3 py-4">
+                <Loader2 className="w-6 h-6 animate-spin text-terracotta" />
+                <span className="font-sans text-slate">Crafting {QUESTION_BATCH_SIZE} personalized questions based on your reflections...</span>
               </div>
             ) : (
               <div className="space-y-4">
+                {/* Secondary: Generate More Questions - now shown first for continuation */}
+                <motion.button
+                  onClick={handleGenerateMoreQuestions}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="w-full flex items-center justify-center gap-3 px-8 py-4 rounded-2xl font-sans font-medium transition-gentle bg-gradient-to-r from-sage to-sage-dark text-cream hover:shadow-lg"
+                >
+                  <MessageCircle className="w-5 h-5" />
+                  <span>Continue Exploring ({QUESTION_BATCH_SIZE} more questions)</span>
+                </motion.button>
+
                 {/* Primary: Create Vision Board */}
                 <motion.button
                   onClick={handleCreateVisionBoard}
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
-                  className="w-full flex items-center justify-center gap-3 px-8 py-4 rounded-2xl font-sans font-medium transition-gentle bg-gradient-to-r from-terracotta to-terracotta-dark text-cream hover:shadow-lg"
+                  className="w-full flex items-center justify-center gap-3 px-8 py-4 rounded-2xl font-sans font-medium transition-gentle border-2 border-terracotta/50 text-terracotta hover:bg-terracotta/5"
                 >
                   <Sparkles className="w-5 h-5" />
                   <span>Create My Vision Board</span>
-                </motion.button>
-
-                {/* Secondary: Generate More Questions */}
-                <motion.button
-                  onClick={handleGenerateMoreQuestions}
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  className="w-full flex items-center justify-center gap-3 px-8 py-4 rounded-2xl font-sans font-medium transition-gentle border-2 border-sage/50 text-sage-dark hover:bg-sage/5"
-                >
-                  <MessageCircle className="w-5 h-5" />
-                  <span>Explore Deeper ({QUESTION_BATCH_SIZE} more questions)</span>
                 </motion.button>
 
                 {/* Go back */}
@@ -545,8 +562,10 @@ function JournalPageContent() {
             )}
 
             <div className="mt-8 pt-6 border-t border-sand/50">
-              <p className="font-sans text-xs text-slate/60">
-                Tip: More questions = more personalized vision board imagery
+              <p className="font-sans text-xs text-slate/60 text-center">
+                {batchNumber === 0 
+                  ? "Tip: More reflections = more personalized and meaningful imagery"
+                  : `You can continue exploring as long as you'd like. Each batch builds on everything you've shared.`}
               </p>
             </div>
           </div>
@@ -560,7 +579,7 @@ function JournalPageContent() {
     <div className="min-h-screen bg-gradient-warm">
       {/* Edit mode header */}
       {isEditMode && existingBoardId && (
-        <header className="fixed top-0 left-0 right-0 z-50 bg-cream/90 backdrop-blur-md border-b border-sand/50">
+        <header className="fixed top-0 left-0 right-0 z-50 bg-cream/90 backdrop-blur-md border-b border-white/5">
           <div className="max-w-4xl mx-auto px-4 h-14 flex items-center justify-between">
             <button
               onClick={() => router.push(`/board/${existingBoardId}`)}
@@ -590,7 +609,7 @@ function JournalPageContent() {
       )}
 
       {/* Progress bar */}
-      <div className={cn("fixed left-0 right-0 h-1 bg-cream-dark z-50", isEditMode ? "top-14" : "top-0")}>
+      <div className={cn("fixed left-0 right-0 h-1 bg-sand z-50", isEditMode ? "top-14" : "top-0")}>
         <motion.div 
           className="h-full bg-gradient-to-r from-terracotta to-sage"
           initial={{ width: 0 }}
@@ -599,18 +618,22 @@ function JournalPageContent() {
         />
       </div>
 
-      {/* Category indicator */}
+      {/* Phase indicator */}
       <div className={cn("fixed left-1/2 -translate-x-1/2 z-40", isEditMode ? "top-20" : "top-6")}>
         <motion.div 
-          key={currentPrompt?.category}
+          key={currentPrompt?.phase}
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="flex items-center gap-2 px-4 py-2 rounded-full bg-cream/80 backdrop-blur-sm border border-sand/50"
+          className={cn(
+            "flex items-center gap-2 px-4 py-2 rounded-full backdrop-blur-sm border border-white/10",
+            "bg-gradient-to-r text-white/90",
+            getCurrentPhaseColor()
+          )}
         >
-          <span>{getCurrentCategory()?.icon}</span>
-          <span className="font-sans text-sm text-slate">{getCurrentCategory()?.label}</span>
-          {currentPrompt?.isDynamic && (
-            <span className="text-xs text-terracotta">(personalized)</span>
+          <span>{getCurrentPhase()?.icon}</span>
+          <span className="font-sans text-sm">{getCurrentPhase()?.label}</span>
+          {getCurrentPhase()?.description && (
+            <span className="text-xs opacity-70 hidden sm:inline">— {getCurrentPhase()?.description}</span>
           )}
         </motion.div>
       </div>
@@ -643,7 +666,7 @@ function JournalPageContent() {
       </div>
 
       {/* Bottom navigation */}
-      <div className="fixed bottom-0 left-0 right-0 z-40 pb-6 pt-4 bg-gradient-to-t from-cream/80 to-transparent">
+      <div className="fixed bottom-0 left-0 right-0 z-40 pb-6 pt-4 bg-gradient-to-t from-cream to-transparent">
         <div className="flex items-center justify-center gap-4">
           {/* Back button */}
           <button
@@ -741,20 +764,61 @@ function PromptCard({
   isSaving,
   isLastOfPhase,
 }: PromptCardProps) {
-  const isWelcome = prompt.category === "welcome";
+  const isInterlude = prompt.isInterlude;
+  const showInput = !isInterlude;
+
+  // Format subtext - handle bullet points for framework content
+  const formatSubtext = (text: string) => {
+    if (text.includes('\n•')) {
+      const parts = text.split('\n');
+      return (
+        <div className="space-y-2">
+          {parts.map((part, i) => {
+            if (part.startsWith('•')) {
+              return (
+                <div key={i} className="flex items-start gap-3 pl-2">
+                  <span className="text-terracotta mt-1">•</span>
+                  <span>{part.substring(1).trim()}</span>
+                </div>
+              );
+            }
+            return part ? <p key={i}>{part}</p> : null;
+          })}
+        </div>
+      );
+    }
+    return text;
+  };
 
   return (
-    <div className="prompt-card p-8 md:p-12">
-      {/* Question */}
-      <h2 className="font-display text-2xl md:text-3xl text-charcoal mb-4 leading-relaxed">
+    <div className={cn(
+      "prompt-card p-8 md:p-12",
+      isInterlude && "bg-gradient-to-br from-cream to-cream-dark/50"
+    )}>
+      {/* Interlude badge */}
+      {isInterlude && prompt.id !== "welcome" && (
+        <div className="inline-flex items-center px-3 py-1 rounded-full bg-charcoal/10 text-charcoal/70 text-xs font-sans mb-4">
+          📖 Key Concept
+        </div>
+      )}
+
+      {/* Question/Title */}
+      <h2 className={cn(
+        "font-display text-charcoal mb-4 leading-relaxed",
+        isInterlude ? "text-xl md:text-2xl" : "text-2xl md:text-3xl"
+      )}>
         {prompt.question}
       </h2>
       
       {/* Subtext */}
       {prompt.subtext && (
-        <p className="font-serif text-slate mb-8 leading-relaxed">
-          {prompt.subtext}
-        </p>
+        <div className={cn(
+          "font-serif text-slate leading-relaxed",
+          showInput ? "mb-8" : "mb-6",
+          isInterlude && "text-base md:text-lg"
+        )}>
+          {formatSubtext(prompt.subtext)}
+        </div>
       )}
 
       {/* Psychology technique badge */}
@@ -764,8 +828,8 @@ function PromptCard({
         </div>
       )}
 
-      {/* Answer input */}
-      {!isWelcome && (
+      {/* Answer input - only for non-interludes */}
+      {showInput && (
         <div className="mb-8">
           <textarea
             value={answer}
@@ -783,7 +847,12 @@ function PromptCard({
         disabled={isSaving}
         whileHover={{ scale: 1.02 }}
         whileTap={{ scale: 0.98 }}
-        className="w-full flex items-center justify-center gap-3 px-8 py-4 rounded-2xl font-sans font-medium transition-gentle bg-gradient-to-r from-terracotta to-terracotta-dark text-cream hover:shadow-lg"
+        className={cn(
+          "w-full flex items-center justify-center gap-3 px-8 py-4 rounded-2xl font-sans font-medium transition-gentle",
+          isInterlude 
+            ? "bg-charcoal/90 hover:bg-charcoal text-cream hover:shadow-lg"
+            : "bg-gradient-to-r from-terracotta to-terracotta-dark text-cream hover:shadow-lg"
+        )}
       >
         {isSaving ? (
           <>
@@ -793,11 +862,13 @@ function PromptCard({
         ) : (
           <>
             <span>
-              {isWelcome 
-                ? "I'm Ready" 
-                : isLastOfPhase 
-                  ? "Continue" 
-                  : "Next"
+              {prompt.id === "welcome"
+                ? "Begin Excavation" 
+                : isInterlude
+                  ? "I Understand"
+                  : isLastOfPhase 
+                    ? "Continue" 
+                    : "Next"
               }
             </span>
             <ArrowRight className="w-5 h-5" />

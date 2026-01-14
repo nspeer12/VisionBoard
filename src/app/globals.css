@@ -1,22 +1,22 @@
 @import "tailwindcss";
 
 @theme {
-  /* Dreamy, warm color palette */
-  --color-cream: #FDF8F3;
-  --color-cream-dark: #F5EDE4;
-  --color-sand: #E8DED3;
-  --color-terracotta: #C4A484;
-  --color-terracotta-dark: #A68B6A;
-  --color-sage: #9CAF88;
-  --color-sage-dark: #7A8F68;
-  --color-slate: #5C6B73;
-  --color-charcoal: #2D3436;
-  --color-ink: #1A1A1A;
+  /* Dark mode palette */
+  --color-cream: #0D0D0D;
+  --color-cream-dark: #161616;
+  --color-sand: #2A2A2A;
+  --color-terracotta: #D4A574;
+  --color-terracotta-dark: #B8956A;
+  --color-sage: #8FB37A;
+  --color-sage-dark: #6E9458;
+  --color-slate: #9CA3AF;
+  --color-charcoal: #F5F5F5;
+  --color-ink: #FAFAFA;
   
   /* Accent colors */
-  --color-rose: #D4A5A5;
-  --color-lavender: #B8B5C9;
-  --color-lavender-dark: #9691AB;
+  --color-rose: #E8A5A5;
+  --color-lavender: #A8A5C9;
+  --color-lavender-dark: #8580A8;
   --color-ocean: #7FA6B5;
   
   /* Typography scale */
@@ -60,10 +60,10 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Dreamy text selection */
+/* Text selection */
 ::selection {
   background-color: var(--color-terracotta);
-  color: var(--color-cream);
+  color: #0D0D0D;
 }
 
 /* Custom scrollbar */
@@ -73,11 +73,11 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--color-cream-dark);
+  background: #1A1A1A;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--color-sand);
+  background: #3A3A3A;
   border-radius: 4px;
 }
 
@@ -106,17 +106,16 @@ body {
 
 /* Gradient backgrounds */
 .bg-gradient-warm {
-  background: linear-gradient(135deg, var(--color-cream) 0%, var(--color-cream-dark) 100%);
+  background: linear-gradient(135deg, #0D0D0D 0%, #111111 100%);
 }
 
 .bg-gradient-dreamy {
-  background: linear-gradient(180deg, var(--color-cream) 0%, var(--color-lavender) 50%, var(--color-rose) 100%);
-  opacity: 0.3;
+  background: linear-gradient(180deg, #0D0D0D 0%, rgba(168, 165, 201, 0.15) 50%, rgba(232, 165, 165, 0.1) 100%);
 }
 
 /* Text gradient */
 .text-gradient {
-  background: linear-gradient(135deg, var(--color-terracotta) 0%, var(--color-sage-dark) 100%);
+  background: linear-gradient(135deg, var(--color-terracotta) 0%, var(--color-sage) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -129,19 +128,19 @@ body {
 
 /* Glass effect */
 .glass {
-  background: rgba(253, 248, 243, 0.8);
+  background: rgba(13, 13, 13, 0.85);
   backdrop-filter: blur(12px);
-  border: 1px solid rgba(200, 180, 160, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 /* Journal prompt card styling */
 .prompt-card {
-  background: var(--color-cream);
-  border: 1px solid var(--color-sand);
+  background: #161616;
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 24px;
   box-shadow: 
-    0 4px 6px -1px rgba(0, 0, 0, 0.05),
-    0 2px 4px -1px rgba(0, 0, 0, 0.03);
+    0 4px 6px -1px rgba(0, 0, 0, 0.3),
+    0 2px 4px -1px rgba(0, 0, 0, 0.2);
 }
 
 /* Textarea for journaling */
@@ -189,51 +188,57 @@ body {
 
 /* ============================================
    COLLAGE GRID LAYOUT
-   Magazine-style masonry grid with varying sizes
+   Square-based grid that respects generated image aspect ratios
+   DALL-E generates 1024x1024 square images
    ============================================ */
 
 .collage-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  grid-auto-rows: 180px;
+  grid-auto-rows: 1fr;
   gap: 16px;
   grid-auto-flow: dense;
 }
 
-/* Small items: 1x1 */
+/* Make grid cells square using aspect-ratio */
+.collage-grid::before {
+  content: '';
+  width: 0;
+  padding-bottom: 100%;
+  grid-row: 1 / 1;
+  grid-column: 1 / 1;
+}
+
+.collage-grid > *:first-child {
+  grid-row: 1 / 1;
+  grid-column: 1 / 1;
+}
+
+/* Small items: 1x1 square */
 .collage-item-small {
   grid-column: span 1;
   grid-row: span 1;
+  aspect-ratio: 1;
 }
 
-/* Medium items: 1x2 (tall) or 2x1 (wide) */
+/* Medium items: 1x1 square (same as small but visually grouped) */
 .collage-item-medium {
   grid-column: span 1;
-  grid-row: span 2;
+  grid-row: span 1;
+  aspect-ratio: 1;
 }
 
-/* Large items: 2x2 */
+/* Large items: 2x2 square */
 .collage-item-large {
   grid-column: span 2;
   grid-row: span 2;
-}
-
-/* Alternate medium items between tall and wide for variety */
-.collage-item-medium:nth-of-type(4n) {
-  grid-column: span 2;
-  grid-row: span 1;
-}
-
-.collage-item-medium:nth-of-type(4n+1) {
-  grid-column: span 1;
-  grid-row: span 2;
+  aspect-ratio: 1;
 }
 
 /* Responsive adjustments */
 @media (max-width: 1024px) {
   .collage-grid {
     grid-template-columns: repeat(3, 1fr);
-    grid-auto-rows: 160px;
     gap: 12px;
   }
   
@@ -246,7 +251,6 @@ body {
 @media (max-width: 768px) {
   .collage-grid {
     grid-template-columns: repeat(2, 1fr);
-    grid-auto-rows: 140px;
     gap: 10px;
   }
   
@@ -260,29 +264,22 @@ body {
     grid-column: span 2;
     grid-row: span 2;
   }
-  
-  .collage-item-medium:nth-of-type(4n),
-  .collage-item-medium:nth-of-type(4n+1) {
-    grid-column: span 1;
-    grid-row: span 1;
-  }
 }
 
 @media (max-width: 480px) {
   .collage-grid {
-    grid-template-columns: 1fr;
-    grid-auto-rows: 200px;
+    grid-template-columns: repeat(2, 1fr);
     gap: 12px;
   }
   
   .collage-item-small,
-  .collage-item-medium,
-  .collage-item-large {
+  .collage-item-medium {
     grid-column: span 1;
     grid-row: span 1;
   }
   
   .collage-item-large {
+    grid-column: span 2;
     grid-row: span 2;
   }
 }
@@ -298,8 +295,8 @@ body {
 .collage-item:hover {
   transform: translateY(-4px);
   box-shadow: 
-    0 20px 40px rgba(0, 0, 0, 0.1),
-    0 8px 16px rgba(0, 0, 0, 0.06);
+    0 20px 40px rgba(0, 0, 0, 0.4),
+    0 8px 16px rgba(0, 0, 0, 0.3);
 }
 
 /* Image within collage items */

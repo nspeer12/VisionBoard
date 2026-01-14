@@ -251,7 +251,7 @@ export default function BoardPage() {
       const canvas = await html2canvas(collageRef.current, {
         backgroundColor: board.canvas.background.type === "color" 
           ? board.canvas.background.value 
-          : "#FDF8F3",
+          : "#0D0D0D",
         scale: 2,
         useCORS: true,
         allowTaint: true,
@@ -304,14 +304,14 @@ export default function BoardPage() {
       style={{
         backgroundColor: board?.canvas.background.type === "color" 
           ? board.canvas.background.value 
-          : "#FDF8F3",
+          : "#0D0D0D",
         backgroundImage: board?.canvas.background.type === "gradient"
-          ? `linear-gradient(${board.canvas.background.direction || 135}deg, ${board.canvas.background.value}, ${board.canvas.background.secondaryValue || "#E8DED3"})`
+          ? `linear-gradient(${board.canvas.background.direction || 135}deg, ${board.canvas.background.value}, ${board.canvas.background.secondaryValue || "#1A1A1A"})`
           : undefined,
       }}
     >
       {/* Header */}
-      <header className="sticky top-0 z-50 bg-cream/80 backdrop-blur-md border-b border-sand/50">
+      <header className="sticky top-0 z-50 bg-cream/90 backdrop-blur-md border-b border-white/5">
         <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
         <div className="flex items-center gap-4">
           <button
@@ -388,17 +388,17 @@ export default function BoardPage() {
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
-              className="absolute right-4 top-full mt-2 bg-cream rounded-2xl shadow-xl border border-sand/50 p-4 w-72"
+              className="absolute right-4 top-full mt-2 bg-cream-dark rounded-2xl shadow-xl border border-white/10 p-4 w-72"
             >
               <h3 className="font-display text-base text-charcoal mb-3">Background</h3>
               
               <div className="grid grid-cols-5 gap-2 mb-3">
-                {["#FDF8F3", "#F5EDE4", "#E8DED3", "#FFFFFF", "#1A1A1A", 
-                  "#D4A5A5", "#B8B5C9", "#9CAF88", "#7FA6B5", "#C4A484"].map(color => (
+                {["#0D0D0D", "#161616", "#1A1A1A", "#242424", "#2A2A2A", 
+                  "#3D2424", "#2D2A3D", "#2A3D2A", "#2A3D3D", "#3D3428"].map(color => (
                   <button
                     key={color}
                     onClick={() => updateBackground({ type: "color", value: color })}
-                    className="w-10 h-10 rounded-lg border-2 border-sand/50 hover:border-terracotta transition-gentle"
+                    className="w-10 h-10 rounded-lg border-2 border-white/10 hover:border-terracotta transition-gentle"
                     style={{ backgroundColor: color }}
                   />
                 ))}
@@ -408,22 +408,22 @@ export default function BoardPage() {
                 <button
                   onClick={() => updateBackground({ 
                     type: "gradient", 
-                    value: "#FDF8F3", 
-                    secondaryValue: "#D4A5A5",
+                    value: "#0D0D0D", 
+                    secondaryValue: "#3D2424",
                     direction: 135 
                   })}
-                  className="w-full h-10 rounded-lg border-2 border-sand/50 hover:border-terracotta transition-gentle"
-                  style={{ background: "linear-gradient(135deg, #FDF8F3, #D4A5A5)" }}
+                  className="w-full h-10 rounded-lg border-2 border-white/10 hover:border-terracotta transition-gentle"
+                  style={{ background: "linear-gradient(135deg, #0D0D0D, #3D2424)" }}
                 />
                 <button
                   onClick={() => updateBackground({ 
                     type: "gradient", 
-                    value: "#FDF8F3", 
-                    secondaryValue: "#B8B5C9",
+                    value: "#0D0D0D", 
+                    secondaryValue: "#2D2A3D",
                     direction: 180 
                   })}
-                  className="w-full h-10 rounded-lg border-2 border-sand/50 hover:border-terracotta transition-gentle"
-                  style={{ background: "linear-gradient(180deg, #FDF8F3, #B8B5C9)" }}
+                  className="w-full h-10 rounded-lg border-2 border-white/10 hover:border-terracotta transition-gentle"
+                  style={{ background: "linear-gradient(180deg, #0D0D0D, #2D2A3D)" }}
                 />
               </div>
             </motion.div>
@@ -565,7 +565,7 @@ function CollageCard({ item, index, isGenerating, onEdit, onRegenerate }: Collag
               draggable={false}
             />
       ) : isGenerating || item.data.status === "pending" ? (
-        <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-cream to-cream-dark">
+        <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-cream-dark to-sand">
           <div className="relative">
             <div className="w-16 h-16 border-2 border-terracotta/30 rounded-full" />
             <div className="absolute inset-0 w-16 h-16 border-2 border-terracotta border-t-transparent rounded-full animate-spin" />
@@ -674,7 +674,7 @@ function EditImageModal({ item, isGenerating, onClose, onSave, onRegenerate, onD
       className="fixed inset-0 z-50 flex items-center justify-center p-4"
       onClick={onClose}
     >
-      <div className="absolute inset-0 bg-charcoal/40 backdrop-blur-sm" />
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
       
       <motion.div
         initial={{ opacity: 0, scale: 0.95, y: 20 }}
@@ -682,10 +682,10 @@ function EditImageModal({ item, isGenerating, onClose, onSave, onRegenerate, onD
         exit={{ opacity: 0, scale: 0.95, y: 20 }}
         transition={{ type: "spring", duration: 0.5 }}
         onClick={(e) => e.stopPropagation()}
-        className="relative bg-cream rounded-3xl shadow-2xl border border-sand/50 w-full max-w-xl overflow-hidden"
+        className="relative bg-cream-dark rounded-3xl shadow-2xl border border-white/10 w-full max-w-xl max-h-[90vh] overflow-y-auto"
       >
         {/* Header */}
-        <div className="px-6 pt-6 pb-4 flex items-center justify-between">
+        <div className="sticky top-0 z-10 bg-cream-dark px-6 pt-6 pb-4 flex items-center justify-between border-b border-white/10">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-terracotta to-terracotta-dark flex items-center justify-center">
               <Pencil className="w-5 h-5 text-cream" />
@@ -705,7 +705,7 @@ function EditImageModal({ item, isGenerating, onClose, onSave, onRegenerate, onD
 
         {/* Preview */}
         {item.data.src && (
-          <div className="mx-6 mb-4 rounded-2xl overflow-hidden aspect-video bg-cream-dark">
+          <div className="mx-6 mt-4 mb-4 rounded-2xl overflow-hidden aspect-square bg-cream-dark">
             <img
               src={item.data.src}
               alt={item.data.title}
@@ -716,7 +716,7 @@ function EditImageModal({ item, isGenerating, onClose, onSave, onRegenerate, onD
 
         {/* Personal Connection - shows why this was generated */}
         {item.data.personalConnection && (
-          <div className="mx-6 mb-4 p-3 rounded-xl bg-lavender/20 border border-lavender/30">
+          <div className="mx-6 mb-4 p-3 rounded-xl bg-lavender/10 border border-lavender/20">
             <p className="font-sans text-xs text-slate/70 mb-1">From your journal:</p>
             <p className="font-serif text-sm text-charcoal italic">{item.data.personalConnection}</p>
           </div>
@@ -918,7 +918,7 @@ function AddImageModal({ onClose, onAdd }: AddImageModalProps) {
       className="fixed inset-0 z-50 flex items-center justify-center p-4"
       onClick={onClose}
     >
-      <div className="absolute inset-0 bg-charcoal/40 backdrop-blur-sm" />
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
       
       <motion.div
         initial={{ opacity: 0, scale: 0.95, y: 20 }}
@@ -926,10 +926,10 @@ function AddImageModal({ onClose, onAdd }: AddImageModalProps) {
         exit={{ opacity: 0, scale: 0.95, y: 20 }}
         transition={{ type: "spring", duration: 0.5 }}
         onClick={(e) => e.stopPropagation()}
-        className="relative bg-cream rounded-3xl shadow-2xl border border-sand/50 w-full max-w-xl overflow-hidden"
+        className="relative bg-cream-dark rounded-3xl shadow-2xl border border-white/10 w-full max-w-xl max-h-[90vh] overflow-y-auto"
       >
         {/* Header */}
-        <div className="px-6 pt-6 pb-4">
+        <div className="sticky top-0 z-10 bg-cream-dark px-6 pt-6 pb-4 border-b border-white/10">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-terracotta to-terracotta-dark flex items-center justify-center">

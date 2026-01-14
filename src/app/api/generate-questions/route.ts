@@ -22,76 +22,63 @@ export async function POST(request: Request) {
     const { conversationHistory, batchNumber, batchSize } = 
       (await request.json()) as GenerateQuestionsRequest;
     
-    // Build context from conversation
     const conversationContext = conversationHistory
       .map((entry, i) => `Q${i + 1}: ${entry.question}\nA${i + 1}: ${entry.answer}`)
       .join("\n\n");
 
-    // Analyze what areas have been covered
     const totalQuestions = conversationHistory.length;
     
-    const systemPrompt = `You are a thoughtful, empathetic guide helping someone create their vision for 2026. Generate a batch of ${batchSize} deeply personal questions that will help them clarify their dreams, values, and intentions.
+    const systemPrompt = `You are a thoughtful guide helping someone through deep psychological excavation. They've been working through the Dan Koe protocol - uncovering hidden patterns, confronting uncomfortable truths, and building a vision for transformation.
 
-CONVERSATION SO FAR:
+=== FULL CONVERSATION HISTORY (${totalQuestions} questions answered) ===
 ${conversationContext || "This is the beginning of the conversation."}
+=== END CONVERSATION ===
 
-BATCH NUMBER: ${batchNumber} (generating questions ${totalQuestions + 1} to ${totalQuestions + batchSize})
+BATCH NUMBER: ${batchNumber}
 
-YOUR TASK: Generate exactly ${batchSize} questions that form a cohesive set, building on what they've shared.
+YOUR TASK: Generate exactly ${batchSize} NEW questions that go DEEPER into their psyche. These should feel like a therapist or wise friend who truly listened and is now probing further.
 
-GUIDELINES FOR THE BATCH:
-1. Each question should build on previous answers - reference their specific words and themes
-2. The batch should feel like a natural progression, not random questions
-3. Mix exploration (going deeper into themes) with discovery (finding new aspects)
-4. Include at least one question about potential obstacles or challenges
-5. Include at least one actionable/forward-looking question
+KEY PRINCIPLES:
+1. BUILD ON WHAT THEY'VE REVEALED - Reference their specific words, patterns, and admissions
+2. DON'T LET THEM OFF EASY - If they gave a surface-level answer, dig deeper
+3. EXPLORE CONTRADICTIONS - Point out tensions between what they say they want and what they're doing
+4. MAKE THEM UNCOMFORTABLE (compassionately) - Real change requires confronting truth
+5. CONNECT THE DOTS - Help them see how different parts of their excavation relate
 
-QUESTION TYPES TO INCLUDE IN THIS BATCH:
-${batchNumber === 1 ? `
-- VALUES: What matters most? What won't they compromise on?
-- LIFE AREAS: Specific aspects of career, health, relationships, creativity, joy
-- OBSTACLES: Inner blocks, fears, patterns to break
-- IDENTITY: Deeper exploration of who they're becoming
-` : batchNumber === 2 ? `
-- OBSTACLES: What gets in their way? What patterns need to change?
-- RELATIONSHIPS: How do connections with others fit into their vision?
-- DAILY LIFE: What would their ideal day look like?
-- RESILIENCE: What will keep them going when things get hard?
-` : `
-- CLOSING: Small actionable steps they can take
-- COMMITMENT: What they're willing to do differently
-- REMINDER: What they want to remember
-- GRATITUDE: What they already have that supports their vision
-`}
+PHASES TO EXPLORE (based on what's been covered):
+- EXCAVATION: What they're tolerating, complaints vs actions, unbearable truths
+- ANTI-VISION: The life they refuse, what it would cost, who they'd become
+- VISION: What they actually want, who they'd have to become
+- SYNTHESIS: The real enemy, the pattern, the compressed truth
+- GAME-PLAN: One-year, one-month, daily actions, constraints
 
-PSYCHOLOGY TECHNIQUES TO WEAVE IN:
-- Future self visualization
-- Mental contrasting (pair dreams with realistic obstacles)
-- Implementation intentions (if-then planning)
-- Identity-based goals (who they're becoming)
-- Self-compassion (gentle, non-judgmental framing)
+QUESTION STYLES:
+- "You said X, but your behavior suggests Y. What's really going on?"
+- "When you think about [their specific fear], what does that feel like in your body?"
+- "What's the story you tell yourself to justify [their pattern]?"
+- "If you achieved [their goal], what would you be afraid of losing?"
+- "What would [person they respect] say if they saw how you've been living?"
 
-RESPOND WITH JSON ARRAY:
+RESPOND WITH JSON:
 {
   "questions": [
     {
-      "question": "Your thoughtful question",
-      "subtext": "Brief context (1 sentence, can be empty)",
-      "category": "values | identity | life-areas | obstacles | closing",
-      "psychologyTechnique": "optional technique name"
+      "question": "Your probing, personalized question",
+      "subtext": "Brief framing that shows you understood their previous answer",
+      "phase": "excavation | anti-vision | vision | synthesis | game-plan",
+      "psychologyTechnique": "technique name"
     }
   ]
 }
 
-Make each question feel connected to the previous one, creating a natural flow. Questions should be warm and conversational, not clinical.`;
+Questions should be direct, sometimes uncomfortable, but ultimately compassionate. The goal is breakthrough, not comfort.`;
 
     const { text } = await generateText({
       model: xai("grok-3-mini"),
       system: systemPrompt,
-      prompt: `Based on their reflections so far, generate ${batchSize} perfect follow-up questions that will deepen their vision for 2026.`,
+      prompt: `Based on their ${totalQuestions} responses so far, generate ${batchSize} deeper follow-up questions that push them toward genuine insight. Don't let them stay in the comfortable zone.`,
     });
 
-    // Parse the response
     let questionsData;
     try {
       const jsonMatch = text.match(/\{[\s\S]*\}/);
@@ -101,13 +88,11 @@ Make each question feel connected to the previous one, creating a natural flow. 
         throw new Error("No JSON found");
       }
     } catch (parseError) {
-      // Fallback questions
       questionsData = {
         questions: getFallbackQuestions(batchNumber, batchSize)
       };
     }
 
-    // Ensure we have the right number of questions
     let questions = questionsData.questions || [];
     if (questions.length < batchSize) {
       const fallbacks = getFallbackQuestions(batchNumber, batchSize);
@@ -132,89 +117,141 @@ Make each question feel connected to the previous one, creating a natural flow. 
 
 function getFallbackQuestions(batchNumber: number, count: number) {
   const allFallbacks = [
-    // Batch 1 fallbacks
+    // Batch 1: Deeper excavation
     [
       {
-        question: "When you're at your best, what values are you living by?",
-        subtext: "Think of a moment when you felt truly aligned with yourself.",
-        category: "values",
-        psychologyTechnique: "Self-determination"
+        question: "You've named what you're tolerating. Now—why are you okay with that? What does staying stuck give you?",
+        subtext: "There's always a payoff, even in suffering.",
+        phase: "excavation",
+        psychologyTechnique: "Secondary gain analysis"
       },
       {
-        question: "What brings you pure, uncomplicated joy?",
-        subtext: "The small things, the big things — what makes you come alive?",
-        category: "life-areas",
-        psychologyTechnique: "Positive psychology"
+        question: "When you imagine actually changing, what's the first objection your mind raises?",
+        subtext: "That voice has been protecting something.",
+        phase: "excavation",
+        psychologyTechnique: "Resistance mapping"
       },
       {
-        question: "What's the inner obstacle that usually holds you back?",
-        subtext: "Fear, perfectionism, self-doubt — name it without judgment.",
-        category: "obstacles",
-        psychologyTechnique: "Mental contrasting"
+        question: "Who would be disappointed, threatened, or confused if you actually became the person you want to be?",
+        subtext: "Sometimes we stay small to keep others comfortable.",
+        phase: "anti-vision",
+        psychologyTechnique: "Social constraint awareness"
       },
       {
-        question: "If nothing could stop you, what would you create or achieve this year?",
-        subtext: "Dream boldly for a moment.",
-        category: "identity",
-        psychologyTechnique: "Future self visualization"
+        question: "What's the difference between who you are when you're alone versus who you present to others?",
+        subtext: "The gap between these two is where change happens.",
+        phase: "excavation",
+        psychologyTechnique: "Authentic self exploration"
+      },
+      {
+        question: "If you were coaching someone with your exact patterns, what would you tell them that you won't tell yourself?",
+        subtext: "We're often kinder to others than ourselves.",
+        phase: "synthesis",
+        psychologyTechnique: "Self-distancing"
       },
     ],
-    // Batch 2 fallbacks
+    // Batch 2: Confronting the anti-vision
     [
       {
-        question: "When that obstacle shows up, what will you do instead?",
-        subtext: "Create an 'if-then' plan for when things get hard.",
-        category: "obstacles",
-        psychologyTechnique: "Implementation intentions"
+        question: "What's the most painful part of the anti-vision you described? Sit with it for a moment.",
+        subtext: "Don't rush past the discomfort.",
+        phase: "anti-vision",
+        psychologyTechnique: "Negative visualization"
       },
       {
-        question: "Who are the people that support your growth?",
-        subtext: "Think about who you want to spend more time with this year.",
-        category: "life-areas",
-        psychologyTechnique: "Social support"
+        question: "The identity you said you'd have to give up—what part of you is terrified of letting go?",
+        subtext: "Even limiting identities feel safe.",
+        phase: "anti-vision",
+        psychologyTechnique: "Identity attachment"
       },
       {
-        question: "What does your ideal morning look like in 2026?",
-        subtext: "Paint a vivid picture of how your day begins.",
-        category: "identity",
-        psychologyTechnique: "Future self visualization"
+        question: "What would your younger self think if they could see where you are now?",
+        subtext: "Sometimes we need to remember what we once hoped for.",
+        phase: "excavation",
+        psychologyTechnique: "Temporal self-compassion"
       },
       {
-        question: "What will keep you going when motivation fades?",
-        subtext: "Think about your deeper 'why'.",
-        category: "values",
-        psychologyTechnique: "Intrinsic motivation"
+        question: "The 'enemy' you named—when did you first start believing that pattern was necessary?",
+        subtext: "Most patterns started as survival strategies.",
+        phase: "synthesis",
+        psychologyTechnique: "Origin story"
+      },
+      {
+        question: "If you fail at this transformation attempt, what story will you tell yourself? And is that story already running?",
+        subtext: "Name the sabotage before it happens.",
+        phase: "synthesis",
+        psychologyTechnique: "Preemptive excuse awareness"
       },
     ],
-    // Batch 3+ fallbacks
+    // Batch 3: Building conviction
     [
       {
-        question: "What's the smallest action you could take this week toward your vision?",
-        subtext: "Not the big goal — the tiniest step you could actually do tomorrow.",
-        category: "closing",
-        psychologyTechnique: "Minimum viable action"
+        question: "What would make this vision feel like a MUST rather than a 'should'?",
+        subtext: "Until it's a must, it's negotiable.",
+        phase: "vision",
+        psychologyTechnique: "Motivation elevation"
       },
       {
-        question: "What do you want to remember when things get hard?",
-        subtext: "A mantra, a truth, a reason to keep going.",
-        category: "closing",
-        psychologyTechnique: "Self-compassion anchor"
+        question: "The daily actions you listed—be honest, how many days in a row could you actually do them before old patterns kick in?",
+        subtext: "Awareness of your limits is the start of breaking them.",
+        phase: "game-plan",
+        psychologyTechnique: "Realistic assessment"
       },
       {
-        question: "What are you already grateful for that supports this vision?",
-        subtext: "Sometimes what we need is already present in our lives.",
-        category: "values",
-        psychologyTechnique: "Gratitude practice"
+        question: "What's the ONE thing, if you did it consistently for 30 days, would make everything else easier?",
+        subtext: "Find the domino.",
+        phase: "game-plan",
+        psychologyTechnique: "Keystone habit"
       },
       {
-        question: "What are you ready to let go of to make room for growth?",
-        subtext: "Sometimes progress requires releasing something first.",
-        category: "obstacles",
-        psychologyTechnique: "Mental contrasting"
+        question: "When you read your vision statement and anti-vision statement back to back, what happens in your body?",
+        subtext: "The body knows what the mind tries to hide.",
+        phase: "synthesis",
+        psychologyTechnique: "Somatic awareness"
+      },
+      {
+        question: "What's one truth from this entire excavation that you'll probably try to forget by tomorrow?",
+        subtext: "The ones we want to forget are usually the most important.",
+        phase: "synthesis",
+        psychologyTechnique: "Insight anchoring"
+      },
+    ],
+    // Batch 4+: Going deeper
+    [
+      {
+        question: "You've done the work of excavation. What's the conversation you need to have with yourself that you've been avoiding?",
+        subtext: "Sometimes we need to say things out loud to make them real.",
+        phase: "synthesis",
+        psychologyTechnique: "Inner dialogue"
+      },
+      {
+        question: "What would you need to forgive yourself for to fully step into the identity you're building?",
+        subtext: "Guilt keeps us chained to the past.",
+        phase: "vision",
+        psychologyTechnique: "Self-forgiveness"
+      },
+      {
+        question: "The constraints you listed—are those real boundaries or comfortable excuses dressed up as values?",
+        subtext: "Only you know the difference.",
+        phase: "game-plan",
+        psychologyTechnique: "Constraint questioning"
+      },
+      {
+        question: "If you were to sabotage yourself in the next 30 days, exactly how would you do it?",
+        subtext: "Know your enemy's playbook.",
+        phase: "synthesis",
+        psychologyTechnique: "Self-sabotage mapping"
+      },
+      {
+        question: "What's the promise you're making to yourself right now that you're actually willing to keep?",
+        subtext: "Not the ambitious one. The real one.",
+        phase: "game-plan",
+        psychologyTechnique: "Commitment calibration"
       },
     ],
   ];
 
   const batchIndex = Math.min(batchNumber - 1, allFallbacks.length - 1);
-  return allFallbacks[batchIndex].slice(0, count);
+  const batch = allFallbacks[batchIndex];
+  return batch.slice(0, count);
 }

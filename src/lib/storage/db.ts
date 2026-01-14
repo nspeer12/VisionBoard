@@ -8,16 +8,40 @@ export interface JournalResponse {
 }
 
 export interface UserProfile {
-  yearTheme: string;
-  values: string[];
-  lifeAreas: {
-    area: string;
-    goal: string;
-    feeling: string;
-  }[];
-  identity: string[];
-  obstacles: string[];
-  feelings: string[];
+  // Core vision elements
+  antiVisionStatement: string;
+  visionStatement: string;
+  identityStatement: string;
+  
+  // Excavation insights
+  dissatisfactions: string[];
+  patternsThatKeepYouStuck: string[];
+  whatYoureProtecting: string;
+  embarrassingTruth: string;
+  
+  // Anti-vision details
+  antiVisionScenario: string;
+  identityToGiveUp: string;
+  
+  // Vision details
+  dreamTuesday: string;
+  beliefRequired: string;
+  
+  // Game plan
+  oneYearGoal: string;
+  oneMonthGoal: string;
+  dailyActions: string[];
+  constraints: string[];
+  
+  // Legacy fields for backward compatibility
+  yearTheme?: string;
+  values?: string[];
+  obstacles?: string[];
+  
+  // Synthesis
+  theRealEnemy: string;
+  keyInsight: string;
+  summary: string;
 }
 
 export interface Journal {
@@ -141,7 +165,7 @@ export async function createBoard(journalId: string, title: string): Promise<Boa
     createdAt: new Date(),
     updatedAt: new Date(),
     canvas: {
-      background: { type: "color", value: "#FDF8F3" },
+      background: { type: "color", value: "#0D0D0D" },
       elements: [],
       viewport: { x: 0, y: 0, zoom: 1 },
     },
@@ -159,7 +183,7 @@ export async function createBlankBoard(title: string): Promise<string> {
     createdAt: new Date(),
     updatedAt: new Date(),
     canvas: {
-      background: { type: "color", value: "#FDF8F3" },
+      background: { type: "color", value: "#0D0D0D" },
       elements: [],
       viewport: { x: 0, y: 0, zoom: 1 },
     },

@@ -10,7 +10,7 @@ export default function NewJournalPage() {
   useEffect(() => {
     const init = async () => {
       const date = new Date();
-      const title = `My 2026 Vision — ${date.toLocaleDateString("en-US", { month: "short", day: "numeric" })}`;
+      const title = `Transformation Protocol — ${date.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}`;
       const journal = await createJournal(title);
       router.replace(`/journal/${journal.id}`);
     };

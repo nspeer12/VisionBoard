@@ -42,8 +42,8 @@ export default function Home() {
     <main className="min-h-screen bg-gradient-warm">
       {/* Decorative background */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-gradient-radial from-rose/20 to-transparent rounded-full blur-3xl transform translate-x-1/2 -translate-y-1/2" />
-        <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-gradient-radial from-lavender/20 to-transparent rounded-full blur-3xl transform -translate-x-1/2 translate-y-1/2" />
+        <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-gradient-radial from-rose/10 to-transparent rounded-full blur-3xl transform translate-x-1/2 -translate-y-1/2" />
+        <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-gradient-radial from-lavender/10 to-transparent rounded-full blur-3xl transform -translate-x-1/2 translate-y-1/2" />
       </div>
 
       <div className="relative z-10 max-w-4xl mx-auto px-6 py-20">
@@ -61,20 +61,21 @@ export default function Home() {
             className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-cream-dark/60 text-terracotta-dark text-sm font-sans mb-8"
           >
             <Sparkles className="w-4 h-4" />
-            <span>Your 2026 Vision Awaits</span>
+            <span>The Transformation Protocol</span>
           </motion.div>
 
           <h1 className="font-display text-5xl md:text-7xl font-medium text-charcoal mb-6 leading-tight">
-            Dream it.
+            Excavate.
             <br />
-            <span className="text-gradient">See it.</span>
+            <span className="text-gradient">Transform.</span>
             <br />
-            Become it.
+            Become.
           </h1>
 
           <p className="font-serif text-xl text-slate max-w-xl mx-auto leading-relaxed">
-            A guided journey to clarify your vision, transform your aspirations 
-            into vivid imagery, and create a living roadmap for the year ahead.
+            A deep psychological excavation to uncover your hidden patterns, 
+            confront uncomfortable truths, and build a vision so clear that 
+            distractions lose their power.
           </p>
         </motion.div>
 
@@ -96,14 +97,14 @@ export default function Home() {
               <Sparkles className="w-7 h-7 text-cream" />
             </div>
             <h2 className="font-display text-2xl text-charcoal mb-3">
-              Begin Your Journey
+              Begin Excavation
             </h2>
             <p className="font-serif text-slate mb-6">
-              A 10-minute guided reflection to discover your values, 
-              dreams, and the vision for your year ahead.
+              A deep dive into your psyche. Uncover hidden patterns, 
+              confront your anti-vision, and build an unshakeable vision.
             </p>
             <div className="flex items-center gap-2 text-terracotta-dark font-sans text-sm font-medium group-hover:gap-3 transition-all">
-              <span>Start Now</span>
+              <span>Start Protocol</span>
               <ArrowRight className="w-4 h-4" />
             </div>
           </motion.button>
@@ -149,11 +150,11 @@ export default function Home() {
               </div>
               <div className="flex-1">
                 <h2 className="font-display text-2xl text-charcoal mb-3">
-                  Continue Reflecting
+                  Continue the Work
                 </h2>
                 <p className="font-serif text-slate mb-6">
                   Pick up where you left off or revisit a previous 
-                  journal to deepen your exploration.
+                  excavation to deepen your transformation.
                 </p>
                 
                 {isLoading ? (
@@ -194,9 +195,10 @@ export default function Home() {
           className="text-center"
         >
           <p className="font-serif text-lg text-slate/80 max-w-2xl mx-auto italic">
-            "The future belongs to those who believe in the beauty of their dreams."
+            "If you want a specific outcome in life, you must have the lifestyle 
+            that creates that outcome long before you reach it."
           </p>
-          <p className="font-sans text-sm text-slate/60 mt-2">— Eleanor Roosevelt</p>
+          <p className="font-sans text-sm text-slate/60 mt-2">— Dan Koe</p>
         </motion.div>
       </div>
     </main>
