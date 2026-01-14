@@ -184,55 +184,69 @@ Remember: NO people in any image prompts - only scenes, objects, nature, and atm
 function buildProfileContext(profile: UserProfile): string {
   const sections = [];
   
-  sections.push(`YEAR THEME: "${profile.yearWord}"`);
-  sections.push(`DESIRED FEELING: ${profile.yearFeeling}`);
-  
-  if (profile.coreValues.length > 0) {
-    sections.push(`CORE VALUES: ${profile.coreValues.join(", ")}`);
+  // Core vision elements
+  if (profile.visionStatement) {
+    sections.push(`VISION: "${profile.visionStatement}"`);
   }
   
-  if (profile.identityStatements.length > 0) {
-    sections.push(`IDENTITY VISION:\n${profile.identityStatements.map(s => `- ${s}`).join("\n")}`);
+  if (profile.antiVisionStatement) {
+    sections.push(`ANTI-VISION (what they refuse): "${profile.antiVisionStatement}"`);
   }
   
-  if (profile.lifeAreas.length > 0) {
-    sections.push(`LIFE AREAS TO TRANSFORM:\n${profile.lifeAreas.map(a => 
-      `- ${a.area}: ${a.aspiration}${a.currentState ? ` (from: ${a.currentState})` : ""}`
-    ).join("\n")}`);
+  if (profile.identityStatement) {
+    sections.push(`IDENTITY: "${profile.identityStatement}"`);
   }
   
-  if (profile.obstacles.length > 0) {
-    sections.push(`OBSTACLES TO OVERCOME:\n${profile.obstacles.map(o => 
-      `- ${o.obstacle}${o.strategy ? ` → Strategy: ${o.strategy}` : ""}`
-    ).join("\n")}`);
+  // Vision details
+  if (profile.dreamTuesday) {
+    sections.push(`IDEAL DAY VISION: ${profile.dreamTuesday}`);
   }
   
-  if (profile.emotionalGoals.length > 0) {
+  if (profile.beliefRequired) {
+    sections.push(`BELIEF REQUIRED: ${profile.beliefRequired}`);
+  }
+  
+  // Excavation insights
+  if (profile.dissatisfactions?.length > 0) {
+    sections.push(`DISSATISFACTIONS:\n${profile.dissatisfactions.map(d => `- ${d}`).join("\n")}`);
+  }
+  
+  if (profile.patternsThatKeepYouStuck?.length > 0) {
+    sections.push(`PATTERNS TO BREAK:\n${profile.patternsThatKeepYouStuck.map(p => `- ${p}`).join("\n")}`);
+  }
+  
+  if (profile.theRealEnemy) {
+    sections.push(`THE REAL ENEMY: ${profile.theRealEnemy}`);
+  }
+  
+  // Goals
+  if (profile.oneYearGoal) {
+    sections.push(`ONE YEAR GOAL: ${profile.oneYearGoal}`);
+  }
+  
+  if (profile.dailyActions?.length > 0) {
+    sections.push(`DAILY ACTIONS:\n${profile.dailyActions.map(a => `- ${a}`).join("\n")}`);
+  }
+  
+  if (profile.constraints?.length > 0) {
+    sections.push(`NON-NEGOTIABLES:\n${profile.constraints.map(c => `- ${c}`).join("\n")}`);
+  }
+  
+  // For imagery
+  if (profile.emotionalGoals?.length > 0) {
     sections.push(`EMOTIONAL GOALS: ${profile.emotionalGoals.join(", ")}`);
   }
   
-  if (profile.keyThemes.length > 0) {
-    sections.push(`KEY THEMES & IMAGERY: ${profile.keyThemes.join(", ")}`);
+  if (profile.keyThemes?.length > 0) {
+    sections.push(`KEY THEMES: ${profile.keyThemes.join(", ")}`);
   }
   
-  if (profile.personalMantra) {
-    sections.push(`PERSONAL MANTRA: "${profile.personalMantra}"`);
+  if (profile.visualMetaphors?.length > 0) {
+    sections.push(`VISUAL METAPHORS: ${profile.visualMetaphors.join(", ")}`);
   }
   
-  if (profile.dailyVision) {
-    sections.push(`IDEAL DAY VISION: ${profile.dailyVision}`);
-  }
-  
-  if (profile.relationships.length > 0) {
-    sections.push(`IMPORTANT RELATIONSHIPS: ${profile.relationships.join(", ")}`);
-  }
-  
-  if (profile.actionItems.length > 0) {
-    sections.push(`ACTION COMMITMENTS:\n${profile.actionItems.map(a => `- ${a}`).join("\n")}`);
-  }
-  
-  if (profile.gratitudes.length > 0) {
-    sections.push(`GRATITUDES: ${profile.gratitudes.join(", ")}`);
+  if (profile.keyInsight) {
+    sections.push(`KEY INSIGHT: ${profile.keyInsight}`);
   }
   
   sections.push(`SUMMARY: ${profile.summary}`);
@@ -241,7 +255,8 @@ function buildProfileContext(profile: UserProfile): string {
 }
 
 function buildSystemPrompt(imageCount: number, profile?: UserProfile): string {
-  const yearWord = profile?.yearWord || "transformation";
+  // Extract a year word from key themes or vision statement
+  const yearWord = profile?.keyThemes?.[0] || "transformation";
   const keyThemes = profile?.keyThemes?.join(", ") || "growth, peace, abundance";
   
   return `You are an expert vision board designer creating deeply personalized, evocative imagery. Your goal is to transform personal reflections into powerful visual metaphors.
@@ -298,7 +313,7 @@ Make EVERY image personally meaningful - no generic "inspiration" imagery.`;
 }
 
 function getDefaultThemes(profile?: UserProfile) {
-  const yearWord = profile?.yearWord || "Growth";
+  const yearWord = profile?.keyThemes?.[0] || "Growth";
   
   return [
     {
