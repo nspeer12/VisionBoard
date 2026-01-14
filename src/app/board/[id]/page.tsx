@@ -315,7 +315,7 @@ export default function BoardPage() {
         <div className="max-w-7xl mx-auto px-3 sm:px-4 h-14 sm:h-16 flex items-center justify-between gap-2">
         <div className="flex items-center gap-2 sm:gap-4 min-w-0">
           <button
-            onClick={() => router.push("/")}
+            onClick={() => router.push("/dashboard")}
             className="p-2 rounded-xl hover:bg-cream-dark transition-gentle text-slate hover:text-charcoal shrink-0"
           >
             <Home className="w-4 h-4 sm:w-5 sm:h-5" />

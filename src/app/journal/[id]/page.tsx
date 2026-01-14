@@ -23,7 +23,6 @@ import {
 } from "@/lib/storage/db";
 import { 
   prescribedPrompts,
-  promptCategories,
   getProgress,
   getAnsweredCount,
   createDynamicPrompt,
@@ -31,15 +30,6 @@ import {
   QUESTION_BATCH_SIZE,
   type JournalPrompt,
 } from "@/lib/journal/prompts";
-
-const phaseColors: Record<string, string> = {
-  "intro": "from-charcoal to-slate-800",
-  "excavation": "from-slate-600 to-slate-800",
-  "anti-vision": "from-red-900 to-red-950",
-  "vision": "from-emerald-700 to-emerald-900",
-  "synthesis": "from-indigo-700 to-indigo-900",
-  "game-plan": "from-amber-600 to-amber-800",
-};
 import { cn } from "@/lib/utils";
 
 type JournalPhase = "prescribed" | "transition" | "generating" | "dynamic" | "complete";
@@ -442,14 +432,6 @@ function JournalPageContent() {
     setCurrentIndex(index);
   };
 
-  const getCurrentPhase = () => {
-    return promptCategories.find(c => c.id === currentPrompt?.phase);
-  };
-
-  const getCurrentPhaseColor = () => {
-    return phaseColors[currentPrompt?.phase || "excavation"] || phaseColors["excavation"];
-  };
-
   const isPromptAnswered = (promptId: string) => {
     return journal?.responses.some(r => r.promptId === promptId && r.answer.trim().length > 0) || false;
   };
@@ -618,28 +600,8 @@ function JournalPageContent() {
         />
       </div>
 
-      {/* Phase indicator */}
-      <div className={cn("fixed left-1/2 -translate-x-1/2 z-40", isEditMode ? "top-20" : "top-6")}>
-        <motion.div 
-          key={currentPrompt?.phase}
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className={cn(
-            "flex items-center gap-2 px-4 py-2 rounded-full backdrop-blur-sm border border-white/10",
-            "bg-gradient-to-r text-white/90",
-            getCurrentPhaseColor()
-          )}
-        >
-          <span>{getCurrentPhase()?.icon}</span>
-          <span className="font-sans text-sm">{getCurrentPhase()?.label}</span>
-          {getCurrentPhase()?.description && (
-            <span className="text-xs opacity-70 hidden sm:inline">— {getCurrentPhase()?.description}</span>
-          )}
-        </motion.div>
-      </div>
-
       {/* Main content */}
-      <div className={cn("min-h-screen flex items-center justify-center px-4 sm:px-6", isEditMode ? "py-28 sm:py-32" : "py-20 sm:py-24")}>
+      <div className={cn("min-h-screen flex items-center justify-center px-4 sm:px-6", isEditMode ? "py-28 sm:py-32" : "py-16 sm:py-20")}>
         <div className="w-full max-w-2xl pb-16 sm:pb-0">
           <AnimatePresence mode="wait">
             <motion.div
