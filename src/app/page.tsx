@@ -46,25 +46,25 @@ export default function Home() {
         <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-gradient-radial from-lavender/10 to-transparent rounded-full blur-3xl transform -translate-x-1/2 translate-y-1/2" />
       </div>
 
-      <div className="relative z-10 max-w-4xl mx-auto px-6 py-20">
+      <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 py-12 sm:py-20">
         {/* Hero */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, ease: [0.4, 0, 0.2, 1] }}
-          className="text-center mb-20"
+          className="text-center mb-12 sm:mb-20"
         >
           <motion.div
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ delay: 0.2, duration: 0.6 }}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-cream-dark/60 text-terracotta-dark text-sm font-sans mb-8"
+            className="inline-flex items-center gap-2 px-3 sm:px-4 py-2 rounded-full bg-cream-dark/60 text-terracotta-dark text-xs sm:text-sm font-sans mb-6 sm:mb-8"
           >
-            <Sparkles className="w-4 h-4" />
+            <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             <span>The Transformation Protocol</span>
           </motion.div>
 
-          <h1 className="font-display text-5xl md:text-7xl font-medium text-charcoal mb-6 leading-tight">
+          <h1 className="font-display text-4xl sm:text-5xl md:text-7xl font-medium text-charcoal mb-4 sm:mb-6 leading-tight">
             Excavate.
             <br />
             <span className="text-gradient">Transform.</span>
@@ -72,7 +72,7 @@ export default function Home() {
             Become.
           </h1>
 
-          <p className="font-serif text-xl text-slate max-w-xl mx-auto leading-relaxed">
+          <p className="font-serif text-lg sm:text-xl text-slate max-w-xl mx-auto leading-relaxed px-2">
             A deep psychological excavation to uncover your hidden patterns, 
             confront uncomfortable truths, and build a vision so clear that 
             distractions lose their power.
@@ -84,22 +84,22 @@ export default function Home() {
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4, duration: 0.8 }}
-          className="grid md:grid-cols-2 gap-6 mb-8"
+          className="grid sm:grid-cols-2 gap-4 sm:gap-6 mb-6 sm:mb-8"
         >
           {/* Start New Journey */}
           <motion.button
             onClick={startNewJournal}
             whileHover={{ scale: 1.02, y: -4 }}
             whileTap={{ scale: 0.98 }}
-            className="group prompt-card p-8 text-left transition-gentle hover:shadow-xl"
+            className="group prompt-card p-6 sm:p-8 text-left transition-gentle hover:shadow-xl"
           >
-            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-terracotta to-terracotta-dark flex items-center justify-center mb-6 group-hover:scale-110 transition-gentle">
-              <Sparkles className="w-7 h-7 text-cream" />
+            <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-gradient-to-br from-terracotta to-terracotta-dark flex items-center justify-center mb-4 sm:mb-6 group-hover:scale-110 transition-gentle">
+              <Sparkles className="w-6 h-6 sm:w-7 sm:h-7 text-cream" />
             </div>
-            <h2 className="font-display text-2xl text-charcoal mb-3">
+            <h2 className="font-display text-xl sm:text-2xl text-charcoal mb-2 sm:mb-3">
               Begin Excavation
             </h2>
-            <p className="font-serif text-slate mb-6">
+            <p className="font-serif text-sm sm:text-base text-slate mb-4 sm:mb-6">
               A deep dive into your psyche. Uncover hidden patterns, 
               confront your anti-vision, and build an unshakeable vision.
             </p>
@@ -114,15 +114,15 @@ export default function Home() {
             onClick={createBlankBoard}
             whileHover={{ scale: 1.02, y: -4 }}
             whileTap={{ scale: 0.98 }}
-            className="group prompt-card p-8 text-left transition-gentle hover:shadow-xl"
+            className="group prompt-card p-6 sm:p-8 text-left transition-gentle hover:shadow-xl"
           >
-            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-lavender to-lavender-dark flex items-center justify-center mb-6 group-hover:scale-110 transition-gentle">
-              <LayoutGrid className="w-7 h-7 text-cream" />
+            <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-gradient-to-br from-lavender to-lavender-dark flex items-center justify-center mb-4 sm:mb-6 group-hover:scale-110 transition-gentle">
+              <LayoutGrid className="w-6 h-6 sm:w-7 sm:h-7 text-cream" />
             </div>
-            <h2 className="font-display text-2xl text-charcoal mb-3">
+            <h2 className="font-display text-xl sm:text-2xl text-charcoal mb-2 sm:mb-3">
               Blank Canvas
             </h2>
-            <p className="font-serif text-slate mb-6">
+            <p className="font-serif text-sm sm:text-base text-slate mb-4 sm:mb-6">
               Skip the guided reflection and dive straight into 
               creating your vision board from scratch.
             </p>
@@ -138,21 +138,21 @@ export default function Home() {
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5, duration: 0.8 }}
-          className="mb-16"
+          className="mb-12 sm:mb-16"
         >
           <motion.div
             whileHover={{ scale: 1.01 }}
-            className="prompt-card p-8 transition-gentle hover:shadow-xl"
+            className="prompt-card p-5 sm:p-8 transition-gentle hover:shadow-xl"
           >
-            <div className="flex items-start gap-6">
-              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-sage to-sage-dark flex items-center justify-center shrink-0">
-                <BookOpen className="w-7 h-7 text-cream" />
+            <div className="flex flex-col sm:flex-row sm:items-start gap-4 sm:gap-6">
+              <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-gradient-to-br from-sage to-sage-dark flex items-center justify-center shrink-0">
+                <BookOpen className="w-6 h-6 sm:w-7 sm:h-7 text-cream" />
               </div>
-              <div className="flex-1">
-                <h2 className="font-display text-2xl text-charcoal mb-3">
+              <div className="flex-1 min-w-0">
+                <h2 className="font-display text-xl sm:text-2xl text-charcoal mb-2 sm:mb-3">
                   Continue the Work
                 </h2>
-                <p className="font-serif text-slate mb-6">
+                <p className="font-serif text-sm sm:text-base text-slate mb-4 sm:mb-6">
                   Pick up where you left off or revisit a previous 
                   excavation to deepen your transformation.
                 </p>
@@ -160,7 +160,7 @@ export default function Home() {
                 {isLoading ? (
                   <div className="h-12 bg-cream-dark/50 rounded-xl animate-pulse" />
                 ) : journals.length > 0 ? (
-                  <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3">
                     {journals.slice(0, 6).map((journal) => (
                       <button
                         key={journal.id}
@@ -192,13 +192,13 @@ export default function Home() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.8, duration: 1 }}
-          className="text-center"
+          className="text-center px-2"
         >
-          <p className="font-serif text-lg text-slate/80 max-w-2xl mx-auto italic">
+          <p className="font-serif text-base sm:text-lg text-slate/80 max-w-2xl mx-auto italic">
             "If you want a specific outcome in life, you must have the lifestyle 
             that creates that outcome long before you reach it."
           </p>
-          <p className="font-sans text-sm text-slate/60 mt-2">— Dan Koe</p>
+          <p className="font-sans text-xs sm:text-sm text-slate/60 mt-2">— Dan Koe</p>
         </motion.div>
       </div>
     </main>

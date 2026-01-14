@@ -312,55 +312,55 @@ export default function BoardPage() {
     >
       {/* Header */}
       <header className="sticky top-0 z-50 bg-cream/90 backdrop-blur-md border-b border-white/5">
-        <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
-        <div className="flex items-center gap-4">
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 h-14 sm:h-16 flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2 sm:gap-4 min-w-0">
           <button
             onClick={() => router.push("/")}
-            className="p-2 rounded-xl hover:bg-cream-dark transition-gentle text-slate hover:text-charcoal"
+            className="p-2 rounded-xl hover:bg-cream-dark transition-gentle text-slate hover:text-charcoal shrink-0"
           >
-            <Home className="w-5 h-5" />
+            <Home className="w-4 h-4 sm:w-5 sm:h-5" />
           </button>
-          <div className="h-6 w-px bg-sand" />
-            <h1 className="font-display text-xl text-charcoal">{board?.title}</h1>
+          <div className="h-5 sm:h-6 w-px bg-sand hidden sm:block" />
+            <h1 className="font-display text-base sm:text-xl text-charcoal truncate">{board?.title}</h1>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1 sm:gap-2 shrink-0">
             {/* Edit Vision Button - only show if board has an associated journal */}
             {board?.journalId && (
               <button
                 onClick={() => router.push(`/journal/${board.journalId}?edit=true&boardId=${board.id}`)}
-                className="flex items-center gap-2 px-3 py-2.5 rounded-xl hover:bg-cream-dark transition-gentle text-slate hover:text-charcoal font-sans text-sm"
+                className="p-2 sm:px-3 sm:py-2.5 rounded-xl hover:bg-cream-dark transition-gentle text-slate hover:text-charcoal font-sans text-sm"
                 title="Edit your vision prompt and regenerate"
               >
                 <FileEdit className="w-4 h-4" />
-                <span className="hidden sm:inline">Edit Vision</span>
+                <span className="hidden md:inline ml-2">Edit Vision</span>
               </button>
             )}
 
             {/* Add Image Button */}
             <button
               onClick={() => setShowAddModal(true)}
-              className="flex items-center gap-2 px-3 py-2.5 rounded-xl hover:bg-cream-dark transition-gentle text-slate hover:text-charcoal font-sans text-sm"
+              className="p-2 sm:px-3 sm:py-2.5 rounded-xl hover:bg-cream-dark transition-gentle text-slate hover:text-charcoal font-sans text-sm"
             >
               <Plus className="w-4 h-4" />
-              <span className="hidden sm:inline">Add Image</span>
+              <span className="hidden md:inline ml-2">Add Image</span>
             </button>
 
           <button
               onClick={() => setShowBackgroundPicker(!showBackgroundPicker)}
             className={cn(
-                "p-2.5 rounded-xl transition-gentle relative",
+                "p-2 sm:p-2.5 rounded-xl transition-gentle relative",
                 showBackgroundPicker ? "bg-cream-dark text-charcoal" : "hover:bg-cream-dark text-slate hover:text-charcoal"
             )}
           >
-              <Palette className="w-5 h-5" />
+              <Palette className="w-4 h-4 sm:w-5 sm:h-5" />
           </button>
 
           <button
             onClick={exportPNG}
             disabled={isExporting}
             className={cn(
-                "flex items-center gap-2 px-4 py-2.5 rounded-xl transition-gentle font-sans text-sm",
+                "flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-4 py-2 sm:py-2.5 rounded-xl transition-gentle font-sans text-xs sm:text-sm",
               isExporting 
                 ? "bg-sand text-slate cursor-not-allowed" 
                 : "bg-terracotta text-cream hover:bg-terracotta-dark"
@@ -368,13 +368,13 @@ export default function BoardPage() {
           >
             {isExporting ? (
               <>
-                <Loader2 className="w-4 h-4 animate-spin" />
-                  Exporting...
+                <Loader2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 animate-spin" />
+                  <span className="hidden sm:inline">Exporting...</span>
               </>
             ) : (
               <>
-                <Download className="w-4 h-4" />
-                  Export
+                <Download className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                  <span className="hidden xs:inline">Export</span>
               </>
             )}
           </button>
@@ -388,23 +388,23 @@ export default function BoardPage() {
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
-              className="absolute right-4 top-full mt-2 bg-cream-dark rounded-2xl shadow-xl border border-white/10 p-4 w-72"
+              className="absolute right-2 sm:right-4 top-full mt-2 bg-cream-dark rounded-xl sm:rounded-2xl shadow-xl border border-white/10 p-3 sm:p-4 w-64 sm:w-72"
             >
-              <h3 className="font-display text-base text-charcoal mb-3">Background</h3>
+              <h3 className="font-display text-sm sm:text-base text-charcoal mb-2 sm:mb-3">Background</h3>
               
-              <div className="grid grid-cols-5 gap-2 mb-3">
+              <div className="grid grid-cols-5 gap-1.5 sm:gap-2 mb-2 sm:mb-3">
                 {["#0D0D0D", "#161616", "#1A1A1A", "#242424", "#2A2A2A", 
                   "#3D2424", "#2D2A3D", "#2A3D2A", "#2A3D3D", "#3D3428"].map(color => (
                   <button
                     key={color}
                     onClick={() => updateBackground({ type: "color", value: color })}
-                    className="w-10 h-10 rounded-lg border-2 border-white/10 hover:border-terracotta transition-gentle"
+                    className="w-8 h-8 sm:w-10 sm:h-10 rounded-md sm:rounded-lg border-2 border-white/10 hover:border-terracotta transition-gentle"
                     style={{ backgroundColor: color }}
                   />
                 ))}
               </div>
 
-              <div className="space-y-2">
+              <div className="space-y-1.5 sm:space-y-2">
                 <button
                   onClick={() => updateBackground({ 
                     type: "gradient", 
@@ -412,7 +412,7 @@ export default function BoardPage() {
                     secondaryValue: "#3D2424",
                     direction: 135 
                   })}
-                  className="w-full h-10 rounded-lg border-2 border-white/10 hover:border-terracotta transition-gentle"
+                  className="w-full h-8 sm:h-10 rounded-md sm:rounded-lg border-2 border-white/10 hover:border-terracotta transition-gentle"
                   style={{ background: "linear-gradient(135deg, #0D0D0D, #3D2424)" }}
                 />
                 <button
@@ -422,7 +422,7 @@ export default function BoardPage() {
                     secondaryValue: "#2D2A3D",
                     direction: 180 
                   })}
-                  className="w-full h-10 rounded-lg border-2 border-white/10 hover:border-terracotta transition-gentle"
+                  className="w-full h-8 sm:h-10 rounded-md sm:rounded-lg border-2 border-white/10 hover:border-terracotta transition-gentle"
                   style={{ background: "linear-gradient(180deg, #0D0D0D, #2D2A3D)" }}
                 />
               </div>
@@ -432,7 +432,7 @@ export default function BoardPage() {
       </header>
 
       {/* Collage Grid */}
-      <main className="flex-1 p-6 md:p-10">
+      <main className="flex-1 p-3 sm:p-6 md:p-10">
         <div 
           ref={collageRef}
           className="max-w-6xl mx-auto"
@@ -442,20 +442,20 @@ export default function BoardPage() {
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="flex flex-col items-center justify-center py-20"
+              className="flex flex-col items-center justify-center py-12 sm:py-20 px-4"
             >
-              <div className="w-20 h-20 rounded-3xl bg-cream-dark flex items-center justify-center mb-6">
-                <Sparkles className="w-10 h-10 text-terracotta/50" />
+              <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl sm:rounded-3xl bg-cream-dark flex items-center justify-center mb-4 sm:mb-6">
+                <Sparkles className="w-8 h-8 sm:w-10 sm:h-10 text-terracotta/50" />
               </div>
-              <h2 className="font-display text-2xl text-charcoal mb-2">Your canvas awaits</h2>
-              <p className="font-serif text-slate mb-8 text-center max-w-md">
-                Click "Add Image" to start building your vision board with AI-generated imagery.
+              <h2 className="font-display text-xl sm:text-2xl text-charcoal mb-2 text-center">Your canvas awaits</h2>
+              <p className="font-serif text-sm sm:text-base text-slate mb-6 sm:mb-8 text-center max-w-md">
+                Tap the button below to start building your vision board with AI-generated imagery.
               </p>
               <button
                 onClick={() => setShowAddModal(true)}
-                className="flex items-center gap-2 px-6 py-3 rounded-xl bg-terracotta text-cream hover:bg-terracotta-dark transition-gentle font-sans"
+                className="flex items-center gap-2 px-5 sm:px-6 py-2.5 sm:py-3 rounded-xl bg-terracotta text-cream hover:bg-terracotta-dark transition-gentle font-sans text-sm sm:text-base"
               >
-                <Plus className="w-5 h-5" />
+                <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
                 Add Your First Image
               </button>
             </motion.div>
@@ -474,12 +474,12 @@ export default function BoardPage() {
               {/* Add New Image Button */}
               <button
                 onClick={() => setShowAddModal(true)}
-                className="collage-item-small rounded-2xl border-2 border-dashed border-sand/70 bg-cream-dark/30 hover:bg-cream-dark/50 hover:border-terracotta/50 transition-all duration-300 flex flex-col items-center justify-center gap-2 group"
+                className="collage-item-small rounded-xl sm:rounded-2xl border-2 border-dashed border-sand/70 bg-cream-dark/30 hover:bg-cream-dark/50 hover:border-terracotta/50 transition-all duration-300 flex flex-col items-center justify-center gap-1.5 sm:gap-2 group"
               >
-                <div className="w-12 h-12 rounded-full bg-cream flex items-center justify-center group-hover:bg-terracotta/10 group-hover:scale-110 transition-all duration-300">
-                  <Plus className="w-6 h-6 text-slate group-hover:text-terracotta" />
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-cream flex items-center justify-center group-hover:bg-terracotta/10 group-hover:scale-110 transition-all duration-300">
+                  <Plus className="w-5 h-5 sm:w-6 sm:h-6 text-slate group-hover:text-terracotta" />
                 </div>
-                <span className="font-sans text-sm text-slate group-hover:text-charcoal">Add Image</span>
+                <span className="font-sans text-xs sm:text-sm text-slate group-hover:text-charcoal">Add</span>
               </button>
             </div>
           )}
@@ -926,23 +926,23 @@ function AddImageModal({ onClose, onAdd }: AddImageModalProps) {
         exit={{ opacity: 0, scale: 0.95, y: 20 }}
         transition={{ type: "spring", duration: 0.5 }}
         onClick={(e) => e.stopPropagation()}
-        className="relative bg-cream-dark rounded-3xl shadow-2xl border border-white/10 w-full max-w-xl max-h-[90vh] overflow-y-auto"
+        className="relative bg-cream-dark rounded-3xl shadow-2xl border border-white/10 w-full max-w-xl max-h-[85vh] sm:max-h-[90vh] overflow-y-auto mx-2 sm:mx-4"
       >
         {/* Header */}
-        <div className="sticky top-0 z-10 bg-cream-dark px-6 pt-6 pb-4 border-b border-white/10">
+        <div className="sticky top-0 z-10 bg-cream-dark px-4 sm:px-6 pt-4 sm:pt-6 pb-3 sm:pb-4 border-b border-white/10">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-terracotta to-terracotta-dark flex items-center justify-center">
-                <Sparkles className="w-5 h-5 text-cream" />
+            <div className="flex items-center gap-2.5 sm:gap-3">
+              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl bg-gradient-to-br from-terracotta to-terracotta-dark flex items-center justify-center">
+                <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-cream" />
               </div>
               <div>
-                <h2 className="font-display text-xl text-charcoal">Add Image</h2>
-                <p className="font-sans text-sm text-slate">Describe your vision</p>
+                <h2 className="font-display text-lg sm:text-xl text-charcoal">Add Image</h2>
+                <p className="font-sans text-xs sm:text-sm text-slate">Describe your vision</p>
               </div>
             </div>
             <button
               onClick={onClose}
-              className="p-2 rounded-xl hover:bg-cream-dark text-slate hover:text-charcoal transition-gentle"
+              className="p-2 rounded-xl hover:bg-sand/30 text-slate hover:text-charcoal transition-gentle"
             >
               <X className="w-5 h-5" />
             </button>
@@ -950,15 +950,15 @@ function AddImageModal({ onClose, onAdd }: AddImageModalProps) {
         </div>
 
         {/* Form */}
-        <div className="px-6 pb-6 space-y-4">
+        <div className="px-4 sm:px-6 pb-4 sm:pb-6 space-y-3 sm:space-y-4">
           {/* Prompt */}
           <div>
-            <label className="font-sans text-sm text-slate mb-2 block">What do you want to visualize?</label>
+            <label className="font-sans text-xs sm:text-sm text-slate mb-1.5 sm:mb-2 block">What do you want to visualize?</label>
             <textarea
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
               placeholder="A peaceful sunrise over calm ocean waves..."
-              className="w-full p-4 rounded-2xl bg-cream-dark/50 border border-sand/50 font-serif text-charcoal placeholder:text-slate/50 resize-none focus:outline-none focus:border-terracotta/50 transition-gentle"
+              className="w-full p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-cream-dark/50 border border-sand/50 font-serif text-sm sm:text-base text-charcoal placeholder:text-slate/50 resize-none focus:outline-none focus:border-terracotta/50 transition-gentle"
               rows={3}
               autoFocus
             />
@@ -966,13 +966,13 @@ function AddImageModal({ onClose, onAdd }: AddImageModalProps) {
 
           {/* Inspiration chips */}
           <div>
-            <label className="font-sans text-xs text-slate mb-2 block">Need inspiration?</label>
-            <div className="flex flex-wrap gap-2">
+            <label className="font-sans text-[10px] sm:text-xs text-slate mb-1.5 sm:mb-2 block">Need inspiration?</label>
+            <div className="flex flex-wrap gap-1.5 sm:gap-2">
               {inspirationPrompts.map((idea) => (
                 <button
                   key={idea.prompt}
                   onClick={() => useInspiration(idea)}
-                  className="px-3 py-1.5 rounded-full bg-cream-dark/50 border border-sand/50 font-sans text-xs text-slate hover:bg-cream-dark hover:border-terracotta/30 transition-gentle"
+                  className="px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full bg-cream-dark/50 border border-sand/50 font-sans text-[10px] sm:text-xs text-slate hover:bg-cream-dark hover:border-terracotta/30 transition-gentle"
                 >
                   {idea.title}
                 </button>
@@ -982,38 +982,38 @@ function AddImageModal({ onClose, onAdd }: AddImageModalProps) {
 
           {/* Title */}
           <div>
-            <label className="font-sans text-sm text-slate mb-2 block">Title (optional)</label>
+            <label className="font-sans text-xs sm:text-sm text-slate mb-1.5 sm:mb-2 block">Title (optional)</label>
             <input
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="e.g., Inner Peace"
-              className="w-full p-3 rounded-xl bg-cream-dark/50 border border-sand/50 font-sans text-charcoal placeholder:text-slate/50 focus:outline-none focus:border-terracotta/50 transition-gentle"
+              className="w-full p-2.5 sm:p-3 rounded-xl bg-cream-dark/50 border border-sand/50 font-sans text-sm sm:text-base text-charcoal placeholder:text-slate/50 focus:outline-none focus:border-terracotta/50 transition-gentle"
             />
           </div>
 
           {/* Affirmation */}
           <div>
-            <label className="font-sans text-sm text-slate mb-2 block">Affirmation (optional)</label>
+            <label className="font-sans text-xs sm:text-sm text-slate mb-1.5 sm:mb-2 block">Affirmation (optional)</label>
             <input
               type="text"
               value={affirmation}
               onChange={(e) => setAffirmation(e.target.value)}
               placeholder="e.g., I am calm and centered"
-              className="w-full p-3 rounded-xl bg-cream-dark/50 border border-sand/50 font-serif italic text-charcoal placeholder:text-slate/50 focus:outline-none focus:border-terracotta/50 transition-gentle"
+              className="w-full p-2.5 sm:p-3 rounded-xl bg-cream-dark/50 border border-sand/50 font-serif italic text-sm sm:text-base text-charcoal placeholder:text-slate/50 focus:outline-none focus:border-terracotta/50 transition-gentle"
             />
           </div>
 
           {/* Style */}
           <div>
             <label className="font-sans text-sm text-slate mb-2 block">Style</label>
-            <div className="grid grid-cols-4 gap-2">
+            <div className="grid grid-cols-3 sm:grid-cols-4 gap-1.5 sm:gap-2">
               {Object.entries(styleLabels).map(([key, label]) => (
                 <button
                   key={key}
                   onClick={() => setStyle(key)}
                   className={cn(
-                    "py-1.5 px-2 rounded-lg border-2 font-sans text-xs transition-gentle",
+                    "py-1.5 px-1.5 sm:px-2 rounded-lg border-2 font-sans text-[10px] sm:text-xs transition-gentle",
                     style === key 
                       ? "border-terracotta bg-terracotta/10 text-charcoal" 
                       : "border-sand/50 text-slate hover:border-sand"
@@ -1027,14 +1027,14 @@ function AddImageModal({ onClose, onAdd }: AddImageModalProps) {
 
           {/* Grid Size */}
           <div>
-            <label className="font-sans text-sm text-slate mb-2 block">Size in Grid</label>
-            <div className="flex gap-2">
+            <label className="font-sans text-xs sm:text-sm text-slate mb-1.5 sm:mb-2 block">Size in Grid</label>
+            <div className="flex gap-1.5 sm:gap-2">
               {(["small", "medium", "large"] as const).map((size) => (
                 <button
                   key={size}
                   onClick={() => setGridSize(size)}
                   className={cn(
-                    "flex-1 py-2 px-3 rounded-xl border-2 font-sans text-sm capitalize transition-gentle",
+                    "flex-1 py-1.5 sm:py-2 px-2 sm:px-3 rounded-xl border-2 font-sans text-xs sm:text-sm capitalize transition-gentle",
                     gridSize === size 
                       ? "border-terracotta bg-terracotta/10 text-charcoal" 
                       : "border-sand/50 text-slate hover:border-sand"
@@ -1047,10 +1047,10 @@ function AddImageModal({ onClose, onAdd }: AddImageModalProps) {
           </div>
 
           {/* Actions */}
-          <div className="flex gap-3 pt-2">
+          <div className="flex gap-2 sm:gap-3 pt-2">
             <button
               onClick={onClose}
-              className="flex-1 px-4 py-3 rounded-xl border border-sand font-sans text-sm text-slate hover:bg-cream-dark transition-gentle"
+              className="flex-1 px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl border border-sand font-sans text-xs sm:text-sm text-slate hover:bg-cream-dark transition-gentle"
             >
               Cancel
             </button>
@@ -1058,13 +1058,13 @@ function AddImageModal({ onClose, onAdd }: AddImageModalProps) {
               onClick={handleSubmit}
               disabled={!prompt.trim()}
               className={cn(
-                "flex-1 px-4 py-3 rounded-xl font-sans text-sm font-medium transition-gentle flex items-center justify-center gap-2",
+                "flex-1 px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl font-sans text-xs sm:text-sm font-medium transition-gentle flex items-center justify-center gap-1.5 sm:gap-2",
                 prompt.trim()
                   ? "bg-gradient-to-r from-terracotta to-terracotta-dark text-cream hover:shadow-lg"
                   : "bg-sand/50 text-slate/50 cursor-not-allowed"
               )}
             >
-              <Sparkles className="w-4 h-4" />
+              <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               Generate
             </button>
           </div>

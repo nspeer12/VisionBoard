@@ -493,18 +493,18 @@ function JournalPageContent() {
   // Transition screen between phases
   if (phase === "transition" || phase === "generating") {
     return (
-      <div className="min-h-screen bg-gradient-warm flex items-center justify-center px-6">
+      <div className="min-h-screen bg-gradient-warm flex items-center justify-center px-4 sm:px-6 py-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="w-full max-w-lg"
         >
-          <div className="prompt-card p-8 md:p-12 text-center">
-            <div className="w-16 h-16 rounded-full bg-sage/20 flex items-center justify-center mx-auto mb-6">
-              <CheckCircle className="w-8 h-8 text-sage" />
+          <div className="prompt-card p-5 sm:p-8 md:p-12 text-center">
+            <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-sage/20 flex items-center justify-center mx-auto mb-4 sm:mb-6">
+              <CheckCircle className="w-7 h-7 sm:w-8 sm:h-8 text-sage" />
             </div>
             
-            <h2 className="font-display text-2xl md:text-3xl text-charcoal mb-3">
+            <h2 className="font-display text-xl sm:text-2xl md:text-3xl text-charcoal mb-2 sm:mb-3">
               {batchNumber === 0 
                 ? "Deep Work Complete" 
                 : batchNumber === 1
@@ -512,10 +512,10 @@ function JournalPageContent() {
                   : "Excavation Continues"}
             </h2>
             
-            <p className="font-serif text-slate mb-2">
+            <p className="font-serif text-sm sm:text-base text-slate mb-2">
               You've confronted {answeredCount} truth{answeredCount !== 1 ? 's' : ''} so far.
             </p>
-            <p className="font-sans text-sm text-slate/70 mb-6">
+            <p className="font-sans text-xs sm:text-sm text-slate/70 mb-4 sm:mb-6">
               {batchNumber === 0 
                 ? "You've completed the core excavation. Create your vision board to visualize your transformation, or continue to uncover more."
                 : "The AI is building on everything you've revealed. Continue to go even deeper, or create your board with your current insights."}
@@ -523,20 +523,20 @@ function JournalPageContent() {
 
             {phase === "generating" ? (
               <div className="flex flex-col items-center gap-3 py-4">
-                <Loader2 className="w-6 h-6 animate-spin text-terracotta" />
-                <span className="font-sans text-slate">Crafting {QUESTION_BATCH_SIZE} personalized questions based on your reflections...</span>
+                <Loader2 className="w-5 h-5 sm:w-6 sm:h-6 animate-spin text-terracotta" />
+                <span className="font-sans text-sm sm:text-base text-slate">Crafting {QUESTION_BATCH_SIZE} personalized questions...</span>
               </div>
             ) : (
-              <div className="space-y-4">
+              <div className="space-y-3 sm:space-y-4">
                 {/* Secondary: Generate More Questions - now shown first for continuation */}
                 <motion.button
                   onClick={handleGenerateMoreQuestions}
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
-                  className="w-full flex items-center justify-center gap-3 px-8 py-4 rounded-2xl font-sans font-medium transition-gentle bg-gradient-to-r from-sage to-sage-dark text-cream hover:shadow-lg"
+                  className="w-full flex items-center justify-center gap-2 sm:gap-3 px-4 sm:px-8 py-3 sm:py-4 rounded-2xl font-sans text-sm sm:text-base font-medium transition-gentle bg-gradient-to-r from-sage to-sage-dark text-cream hover:shadow-lg"
                 >
-                  <MessageCircle className="w-5 h-5" />
-                  <span>Continue Exploring ({QUESTION_BATCH_SIZE} more questions)</span>
+                  <MessageCircle className="w-4 h-4 sm:w-5 sm:h-5" />
+                  <span>Continue Exploring</span>
                 </motion.button>
 
                 {/* Primary: Create Vision Board */}
@@ -544,16 +544,16 @@ function JournalPageContent() {
                   onClick={handleCreateVisionBoard}
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
-                  className="w-full flex items-center justify-center gap-3 px-8 py-4 rounded-2xl font-sans font-medium transition-gentle border-2 border-terracotta/50 text-terracotta hover:bg-terracotta/5"
+                  className="w-full flex items-center justify-center gap-2 sm:gap-3 px-4 sm:px-8 py-3 sm:py-4 rounded-2xl font-sans text-sm sm:text-base font-medium transition-gentle border-2 border-terracotta/50 text-terracotta hover:bg-terracotta/5"
                 >
-                  <Sparkles className="w-5 h-5" />
+                  <Sparkles className="w-4 h-4 sm:w-5 sm:h-5" />
                   <span>Create My Vision Board</span>
                 </motion.button>
 
                 {/* Go back */}
                 <button
                   onClick={handleBack}
-                  className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-sans text-sm text-slate hover:text-charcoal transition-gentle"
+                  className="w-full flex items-center justify-center gap-2 px-4 py-2.5 sm:py-3 rounded-xl font-sans text-xs sm:text-sm text-slate hover:text-charcoal transition-gentle"
                 >
                   <ChevronLeft className="w-4 h-4" />
                   <span>Review previous answers</span>
@@ -561,11 +561,11 @@ function JournalPageContent() {
               </div>
             )}
 
-            <div className="mt-8 pt-6 border-t border-sand/50">
-              <p className="font-sans text-xs text-slate/60 text-center">
+            <div className="mt-6 sm:mt-8 pt-4 sm:pt-6 border-t border-sand/50">
+              <p className="font-sans text-[10px] sm:text-xs text-slate/60 text-center">
                 {batchNumber === 0 
-                  ? "Tip: More reflections = more personalized and meaningful imagery"
-                  : `You can continue exploring as long as you'd like. Each batch builds on everything you've shared.`}
+                  ? "Tip: More reflections = more personalized imagery"
+                  : `Continue exploring as long as you'd like.`}
               </p>
             </div>
           </div>
@@ -580,29 +580,29 @@ function JournalPageContent() {
       {/* Edit mode header */}
       {isEditMode && existingBoardId && (
         <header className="fixed top-0 left-0 right-0 z-50 bg-cream/90 backdrop-blur-md border-b border-white/5">
-          <div className="max-w-4xl mx-auto px-4 h-14 flex items-center justify-between">
+          <div className="max-w-4xl mx-auto px-3 sm:px-4 h-14 flex items-center justify-between gap-2">
             <button
               onClick={() => router.push(`/board/${existingBoardId}`)}
-              className="flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-cream-dark transition-gentle text-slate hover:text-charcoal font-sans text-sm"
+              className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-2 rounded-xl hover:bg-cream-dark transition-gentle text-slate hover:text-charcoal font-sans text-xs sm:text-sm shrink-0"
             >
               <ArrowLeft className="w-4 h-4" />
-              <span>Back to Board</span>
+              <span className="hidden xs:inline">Back</span>
             </button>
             
-            <h1 className="font-display text-lg text-charcoal">Edit Vision Prompt</h1>
+            <h1 className="font-display text-sm sm:text-lg text-charcoal truncate">Edit Vision</h1>
             
             <button
               onClick={handleRegenerateBoard}
               disabled={isRegenerating || answeredCount === 0}
               className={cn(
-                "flex items-center gap-2 px-4 py-2 rounded-xl font-sans text-sm font-medium transition-gentle",
+                "flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-4 py-2 rounded-xl font-sans text-xs sm:text-sm font-medium transition-gentle shrink-0",
                 answeredCount > 0 && !isRegenerating
                   ? "bg-gradient-to-r from-terracotta to-terracotta-dark text-cream hover:shadow-lg"
                   : "bg-sand/50 text-slate/50 cursor-not-allowed"
               )}
             >
-              <RefreshCw className={cn("w-4 h-4", isRegenerating && "animate-spin")} />
-              <span>Regenerate Board</span>
+              <RefreshCw className={cn("w-3.5 h-3.5 sm:w-4 sm:h-4", isRegenerating && "animate-spin")} />
+              <span className="hidden sm:inline">Regenerate</span>
             </button>
           </div>
         </header>
@@ -639,8 +639,8 @@ function JournalPageContent() {
       </div>
 
       {/* Main content */}
-      <div className={cn("min-h-screen flex items-center justify-center px-6", isEditMode ? "py-32" : "py-24")}>
-        <div className="w-full max-w-2xl">
+      <div className={cn("min-h-screen flex items-center justify-center px-4 sm:px-6", isEditMode ? "py-28 sm:py-32" : "py-20 sm:py-24")}>
+        <div className="w-full max-w-2xl pb-16 sm:pb-0">
           <AnimatePresence mode="wait">
             <motion.div
               key={currentPrompt?.id}
@@ -666,24 +666,24 @@ function JournalPageContent() {
       </div>
 
       {/* Bottom navigation */}
-      <div className="fixed bottom-0 left-0 right-0 z-40 pb-6 pt-4 bg-gradient-to-t from-cream to-transparent">
-        <div className="flex items-center justify-center gap-4">
+      <div className="fixed bottom-0 left-0 right-0 z-40 pb-4 sm:pb-6 pt-4 bg-gradient-to-t from-cream to-transparent">
+        <div className="flex items-center justify-center gap-2 sm:gap-4 px-4">
           {/* Back button */}
           <button
             onClick={handleBack}
             disabled={currentIndex === 0}
             className={cn(
-              "p-3 rounded-full bg-cream/90 backdrop-blur-sm border border-sand/50 transition-all duration-300",
+              "p-2.5 sm:p-3 rounded-full bg-cream/90 backdrop-blur-sm border border-sand/50 transition-all duration-300 shrink-0",
               currentIndex === 0
                 ? "opacity-0 pointer-events-none scale-90" 
                 : "text-slate hover:text-charcoal hover:bg-cream hover:scale-105 shadow-sm"
             )}
           >
-            <ChevronLeft className="w-5 h-5" />
+            <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5" />
           </button>
 
-          {/* Progress dots */}
-          <div className="flex items-center gap-1.5 px-4 py-2.5 rounded-full bg-cream/90 backdrop-blur-sm border border-sand/50 shadow-sm">
+          {/* Progress dots - scrollable on mobile */}
+          <div className="flex items-center gap-1 sm:gap-1.5 px-3 sm:px-4 py-2 sm:py-2.5 rounded-full bg-cream/90 backdrop-blur-sm border border-sand/50 shadow-sm overflow-x-auto max-w-[60vw] sm:max-w-none scrollbar-hide">
             {/* Prescribed prompts */}
             {prescribedPrompts.map((prompt, idx) => {
               const isActive = idx === currentIndex;
@@ -694,12 +694,12 @@ function JournalPageContent() {
                   key={prompt.id}
                   onClick={() => goToPrompt(idx)}
                   className={cn(
-                    "rounded-full transition-all duration-300",
+                    "rounded-full transition-all duration-300 shrink-0",
                     isActive 
-                      ? "w-6 h-2.5 bg-terracotta" 
+                      ? "w-5 sm:w-6 h-2 sm:h-2.5 bg-terracotta" 
                       : hasAnswer 
-                        ? "w-2.5 h-2.5 bg-sage hover:scale-125" 
-                        : "w-2.5 h-2.5 bg-sand/70 hover:bg-sand hover:scale-125"
+                        ? "w-2 sm:w-2.5 h-2 sm:h-2.5 bg-sage hover:scale-125" 
+                        : "w-2 sm:w-2.5 h-2 sm:h-2.5 bg-sand/70 hover:bg-sand hover:scale-125"
                   )}
                   title={`Question ${idx + 1}`}
                 />
@@ -708,7 +708,7 @@ function JournalPageContent() {
             
             {/* Separator if we have dynamic prompts */}
             {prompts.length > prescribedPrompts.length && (
-              <div className="w-px h-4 bg-sand/50 mx-1" />
+              <div className="w-px h-3 sm:h-4 bg-sand/50 mx-0.5 sm:mx-1 shrink-0" />
             )}
             
             {/* Dynamic prompts */}
@@ -722,12 +722,12 @@ function JournalPageContent() {
                   key={prompt.id}
                   onClick={() => goToPrompt(actualIdx)}
                   className={cn(
-                    "rounded-full transition-all duration-300",
+                    "rounded-full transition-all duration-300 shrink-0",
                     isActive 
-                      ? "w-6 h-2.5 bg-terracotta" 
+                      ? "w-5 sm:w-6 h-2 sm:h-2.5 bg-terracotta" 
                       : hasAnswer 
-                        ? "w-2.5 h-2.5 bg-lavender hover:scale-125" 
-                        : "w-2.5 h-2.5 bg-sand/70 hover:bg-sand hover:scale-125"
+                        ? "w-2 sm:w-2.5 h-2 sm:h-2.5 bg-lavender hover:scale-125" 
+                        : "w-2 sm:w-2.5 h-2 sm:h-2.5 bg-sand/70 hover:bg-sand hover:scale-125"
                   )}
                   title={`Question ${actualIdx + 1}`}
                 />
@@ -736,8 +736,8 @@ function JournalPageContent() {
           </div>
 
           {/* Question count */}
-          <div className="px-3 py-2 rounded-full bg-cream/90 backdrop-blur-sm border border-sand/50 shadow-sm">
-            <span className="font-sans text-xs text-slate">
+          <div className="px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-full bg-cream/90 backdrop-blur-sm border border-sand/50 shadow-sm shrink-0">
+            <span className="font-sans text-[10px] sm:text-xs text-slate whitespace-nowrap">
               {currentIndex + 1} / {prompts.length}
             </span>
           </div>
@@ -792,20 +792,20 @@ function PromptCard({
 
   return (
     <div className={cn(
-      "prompt-card p-8 md:p-12",
+      "prompt-card p-5 sm:p-8 md:p-12",
       isInterlude && "bg-gradient-to-br from-cream to-cream-dark/50"
     )}>
       {/* Interlude badge */}
       {isInterlude && prompt.id !== "welcome" && (
-        <div className="inline-flex items-center px-3 py-1 rounded-full bg-charcoal/10 text-charcoal/70 text-xs font-sans mb-4">
+        <div className="inline-flex items-center px-3 py-1 rounded-full bg-charcoal/10 text-charcoal/70 text-xs font-sans mb-3 sm:mb-4">
           📖 Key Concept
         </div>
       )}
 
       {/* Question/Title */}
       <h2 className={cn(
-        "font-display text-charcoal mb-4 leading-relaxed",
-        isInterlude ? "text-xl md:text-2xl" : "text-2xl md:text-3xl"
+        "font-display text-charcoal mb-3 sm:mb-4 leading-relaxed",
+        isInterlude ? "text-lg sm:text-xl md:text-2xl" : "text-xl sm:text-2xl md:text-3xl"
       )}>
         {prompt.question}
       </h2>
@@ -813,9 +813,9 @@ function PromptCard({
       {/* Subtext */}
       {prompt.subtext && (
         <div className={cn(
-          "font-serif text-slate leading-relaxed",
-          showInput ? "mb-8" : "mb-6",
-          isInterlude && "text-base md:text-lg"
+          "font-serif text-slate leading-relaxed text-sm sm:text-base",
+          showInput ? "mb-6 sm:mb-8" : "mb-4 sm:mb-6",
+          isInterlude && "sm:text-lg"
         )}>
           {formatSubtext(prompt.subtext)}
         </div>
@@ -823,19 +823,19 @@ function PromptCard({
 
       {/* Psychology technique badge */}
       {prompt.psychologyTechnique && (
-        <div className="inline-flex items-center px-3 py-1 rounded-full bg-lavender/30 text-slate text-xs font-sans mb-6">
+        <div className="inline-flex items-center px-3 py-1 rounded-full bg-lavender/30 text-slate text-xs font-sans mb-4 sm:mb-6">
           {prompt.psychologyTechnique}
         </div>
       )}
 
       {/* Answer input - only for non-interludes */}
       {showInput && (
-        <div className="mb-8">
+        <div className="mb-6 sm:mb-8">
           <textarea
             value={answer}
             onChange={(e) => onAnswerChange(e.target.value)}
             placeholder={prompt.placeholder}
-            className="journal-textarea w-full p-4 rounded-2xl bg-cream-dark/30 border border-sand/50 focus:border-terracotta/50 transition-gentle min-h-[150px]"
+            className="journal-textarea w-full p-3 sm:p-4 rounded-2xl bg-cream-dark/30 border border-sand/50 focus:border-terracotta/50 transition-gentle min-h-[120px] sm:min-h-[150px] text-base"
             autoFocus
           />
         </div>
@@ -848,7 +848,7 @@ function PromptCard({
         whileHover={{ scale: 1.02 }}
         whileTap={{ scale: 0.98 }}
         className={cn(
-          "w-full flex items-center justify-center gap-3 px-8 py-4 rounded-2xl font-sans font-medium transition-gentle",
+          "w-full flex items-center justify-center gap-2 sm:gap-3 px-6 sm:px-8 py-3.5 sm:py-4 rounded-2xl font-sans font-medium transition-gentle text-sm sm:text-base",
           isInterlude 
             ? "bg-charcoal/90 hover:bg-charcoal text-cream hover:shadow-lg"
             : "bg-gradient-to-r from-terracotta to-terracotta-dark text-cream hover:shadow-lg"
@@ -856,7 +856,7 @@ function PromptCard({
       >
         {isSaving ? (
           <>
-            <Loader2 className="w-5 h-5 animate-spin" />
+            <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" />
             <span>Saving...</span>
           </>
         ) : (
@@ -871,7 +871,7 @@ function PromptCard({
                     : "Next"
               }
             </span>
-            <ArrowRight className="w-5 h-5" />
+            <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
           </>
         )}
       </motion.button>

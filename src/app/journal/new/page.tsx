@@ -18,10 +18,10 @@ export default function NewJournalPage() {
   }, [router]);
 
   return (
-    <div className="min-h-screen bg-cream flex items-center justify-center">
+    <div className="min-h-screen bg-cream flex items-center justify-center px-4">
       <div className="text-center">
         <div className="w-8 h-8 border-2 border-terracotta border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-        <p className="font-serif text-slate">Preparing your journey...</p>
+        <p className="font-serif text-sm sm:text-base text-slate">Preparing your journey...</p>
       </div>
     </div>
   );
